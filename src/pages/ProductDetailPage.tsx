@@ -153,13 +153,40 @@ export default function ProductDetailPage() {
     setSearchParams(searchParams);
   }
 
+  const handleAddToCart = (type: 'addtocart' | 'subscribe', qty: number = 1) => {
+    if (outOfStock) return;
+    const result = addItem(
+      product,
+      customFieldValues,
+      product.server_options?.[0]?.id,
+      type,
+      qty
+    );
+    if (!result.ok) {
+      addToast(t('cart.toast.subscription_conflict'), 'error');
+      return;
+    }
+    if (type === 'subscribe') {
+      addToast(t('product.toast.added_subscription', { name: product.name }), 'success');
+    } else {
+      addToast(t('product.toast.added_qty', { name: product.name, qty }), 'success');
+    }
+    if (qty > 0) setQuantity(1);
+  };
+
   return (
-    <div className="pt-24 lg:pt-28 pb-16 animate-fade-in">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="pt-24 lg:pt-28 pb-32 lg:pb-16 animate-fade-in relative">
+      {/* Red ambient glow overlay */}
+      <div className="fixed top-0 right-0 w-full h-full pointer-events-none -z-10">
+        <div className="absolute top-1/3 right-0 w-[600px] h-[600px] bg-red-600/8 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Status notifications */}
         {checkoutStatus === 'success' && (
           <div className="mb-6 flex items-center gap-3 p-4 bg-red-600/10 border border-red-600/20 rounded-xl animate-fade-in">
             <CheckCircle className="w-5 h-5 text-red-500 shrink-0" />
-            <p className="text-red-800 dark:text-red-300 flex-1">
+            <p className="text-red-300 flex-1">
               {t('product.banner.checkout_success')}
             </p>
             <button onClick={dismissCheckoutStatus} className="text-volcanic-400 hover:text-heading transition-colors">
@@ -171,7 +198,7 @@ export default function ProductDetailPage() {
         {checkoutStatus === 'canceled' && (
           <div className="mb-6 flex items-center gap-3 p-4 bg-sand-500/10 border border-sand-500/20 rounded-xl animate-fade-in">
             <XCircle className="w-5 h-5 text-sand-400 shrink-0" />
-            <p className="text-sand-800 dark:text-sand-300 flex-1">
+            <p className="text-sand-300 flex-1">
               {t('product.banner.checkout_canceled')}
             </p>
             <button onClick={dismissCheckoutStatus} className="text-volcanic-400 hover:text-heading transition-colors">
@@ -180,6 +207,7 @@ export default function ProductDetailPage() {
           </div>
         )}
 
+        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-volcanic-400 mb-8">
           <Link
             to="/products"
@@ -203,9 +231,10 @@ export default function ProductDetailPage() {
           <span className="text-volcanic-500 truncate max-w-[200px]">{product.name}</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-          <div className="space-y-4">
-            <div className="glass-card overflow-hidden aspect-square bg-gradient-to-br from-volcanic-800/40 to-volcanic-900/40 group">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 mb-12">
+          {/* Product Images - Left */}
+          <div className="space-y-4 order-2 lg:order-1">
+            <div className="glass-card overflow-hidden aspect-square bg-gradient-to-br from-volcanic-800/40 to-volcanic-900/40 group relative border border-red-600/10 shadow-2xl shadow-red-600/5">
               {images.length > 0 ? (
                 <img
                   src={images[selectedImage]}
@@ -242,7 +271,9 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          <div className="space-y-6">
+          {/* Product Details - Right */}
+          <div className="space-y-6 order-1 lg:order-2">
+            {/* Badges */}
             <div className="flex flex-wrap gap-2">
               {product.percent_off && product.percent_off > 0 && (
                 <Badge variant="discount">-{product.percent_off}{t('product.discount_suffix')}</Badge>
@@ -267,8 +298,10 @@ export default function ProductDetailPage() {
               )}
             </div>
 
+            {/* Title */}
             <h1 className="text-3xl lg:text-4xl font-bold text-heading">{product.name}</h1>
 
+            {/* Pricing */}
             <div className="space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold text-heading">
@@ -296,6 +329,7 @@ export default function ProductDetailPage() {
               )}
             </div>
 
+            {/* Description */}
             {(product.description || product.small_description) && (
               <div
                 className="prose dark:prose-invert max-w-none text-volcanic-300 leading-relaxed text-base [&_h1]:text-heading [&_h2]:text-heading [&_h3]:text-heading [&_h4]:text-heading [&_strong]:text-heading [&_a]:text-red-400 [&_a:hover]:text-red-300 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 [&_img]:rounded-lg [&_img]:my-4"
@@ -305,7 +339,8 @@ export default function ProductDetailPage() {
               />
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Trust signals - real data only */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div className="glass-card p-4 flex items-center gap-3 group hover:border-red-600/30 transition-all duration-200">
                 <div className="w-10 h-10 rounded-lg bg-red-600/10 flex items-center justify-center group-hover:bg-red-600/20 transition-all duration-200">
                   <Zap className="w-5 h-5 text-red-500" />
@@ -335,6 +370,7 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+            {/* Stock info */}
             {stockTracked && (
               <div className="flex items-center gap-2 text-sm">
                 <span
@@ -358,8 +394,9 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {/* Server options */}
             {product.server_options && product.server_options.length > 0 && (
-              <div className="glass-card p-5">
+              <div className="glass-card p-5 border border-red-600/10">
                 <h3 className="text-sm font-semibold text-heading mb-3 uppercase tracking-wider">
                   {t('product.servers_available')}
                 </h3>
@@ -376,8 +413,9 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {/* Custom fields */}
             {product.custom_fields && product.custom_fields.length > 0 && (
-              <div className="glass-card p-5">
+              <div className="glass-card p-5 border border-red-600/10">
                 <div className="flex items-center gap-2 mb-5">
                   <Settings2 className="w-4 h-4 text-red-500" />
                   <h3 className="text-sm font-semibold text-heading uppercase tracking-wider">
@@ -402,108 +440,65 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {product.subscription ? (
-              <div className="space-y-3">
-                <button
-                  disabled={outOfStock}
-                  onClick={() => {
-                    if (!product) return;
-                    const result = addItem(
-                      product,
-                      customFieldValues,
-                      product.server_options?.[0]?.id,
-                      'addtocart'
-                    );
-                    if (!result.ok) {
-                      addToast(t('cart.toast.subscription_conflict'), 'error');
-                      return;
-                    }
-                    addToast(t('product.toast.added_one_month', { name: product.name }), 'success');
-                  }}
-                  className="w-full py-4 text-base rounded-xl font-semibold flex items-center justify-center gap-2 border-2 border-red-600/40 text-heading bg-volcanic-800/40 hover:bg-volcanic-800/70 hover:border-red-500/60 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-volcanic-800/40 disabled:hover:border-red-600/40"
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  {t('product.buy_one_month')} {formatMoney(product.price + extrasPrice, currency)}
-                </button>
-                <button
-                  disabled={outOfStock}
-                  onClick={() => {
-                    if (!product) return;
-                    const result = addItem(
-                      product,
-                      customFieldValues,
-                      product.server_options?.[0]?.id,
-                      'subscribe'
-                    );
-                    if (result.ok && result.replaced) {
-                      addToast(t('product.toast.replaced_by_subscription', { name: product.name }), 'info');
-                    } else {
-                      addToast(t('product.toast.added_subscription', { name: product.name }), 'success');
-                    }
-                  }}
-                  className="btn-primary w-full py-4 text-base disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <RefreshCw className="w-5 h-5" />
-                  {t('product.subscribe')} {formatMoney(product.price + extrasPrice, currency)}
-                  <span className="text-sm opacity-80">
-                    /{product.period_num && product.period_num > 1 ? `${product.period_num} ` : ''}{product.duration_periodicity ? translatePeriodicity(product.duration_periodicity) : 'mois'}
-                  </span>
-                </button>
-                <p className="text-xs text-volcanic-500 text-center">
-                  {t('product.subscription_note')}
-                </p>
-              </div>
-            ) : (
-              <div className="flex items-stretch gap-3">
-                <div className="flex items-center border-2 border-volcanic-700/60 rounded-xl overflow-hidden bg-volcanic-800/30 shrink-0">
+            {/* CTA Panel - Sticky on mobile, static on desktop */}
+            <div className="sticky bottom-0 left-0 right-0 lg:static bg-volcanic-900/95 backdrop-blur-xl border-t lg:border-t-0 border-red-600/10 p-4 lg:p-0 lg:space-y-3 -mx-4 lg:-mx-0 -mb-32 lg:-mb-0 lg:pt-4 z-40 lg:z-auto rounded-t-xl lg:rounded-none">
+              {product.subscription ? (
+                <div className="space-y-3">
                   <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    disabled={quantity <= 1}
-                    className="w-11 h-full flex items-center justify-center text-volcanic-300 hover:text-heading hover:bg-volcanic-700/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    disabled={outOfStock}
+                    onClick={() => handleAddToCart('addtocart')}
+                    className="w-full py-4 text-base rounded-xl font-semibold flex items-center justify-center gap-2 border-2 border-red-600/40 text-heading bg-volcanic-800/40 hover:bg-volcanic-800/70 hover:border-red-500/60 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-volcanic-800/40 disabled:hover:border-red-600/40"
                   >
-                    <Minus className="w-4 h-4" />
+                    <ShoppingBag className="w-5 h-5" />
+                    {t('product.buy_one_month')} {formatMoney(product.price + extrasPrice, currency)}
                   </button>
-                  <span className="w-10 text-center text-heading font-semibold text-base tabular-nums select-none">
-                    {quantity}
-                  </span>
                   <button
-                    onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
-                    disabled={stockTracked && quantity >= maxQuantity}
-                    className="w-11 h-full flex items-center justify-center text-volcanic-300 hover:text-heading hover:bg-volcanic-700/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    disabled={outOfStock}
+                    onClick={() => handleAddToCart('subscribe')}
+                    className="btn-primary w-full py-4 text-base disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    <Plus className="w-4 h-4" />
+                    <RefreshCw className="w-5 h-5" />
+                    {t('product.subscribe')} {formatMoney(product.price + extrasPrice, currency)}
+                    <span className="text-sm opacity-80">
+                      /{product.period_num && product.period_num > 1 ? `${product.period_num} ` : ''}{product.duration_periodicity ? translatePeriodicity(product.duration_periodicity) : 'mois'}
+                    </span>
+                  </button>
+                  <p className="text-xs text-volcanic-500 text-center">
+                    {t('product.subscription_note')}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-stretch gap-3">
+                  <div className="flex items-center border-2 border-volcanic-700/60 rounded-xl overflow-hidden bg-volcanic-800/30 shrink-0">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      disabled={quantity <= 1}
+                      className="w-11 h-full flex items-center justify-center text-volcanic-300 hover:text-heading hover:bg-volcanic-700/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-10 text-center text-heading font-semibold text-base tabular-nums select-none">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
+                      disabled={stockTracked && quantity >= maxQuantity}
+                      className="w-11 h-full flex items-center justify-center text-volcanic-300 hover:text-heading hover:bg-volcanic-700/40 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <button
+                    disabled={outOfStock}
+                    onClick={() => handleAddToCart('addtocart', quantity)}
+                    className="btn-primary flex-1 py-4 text-base disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    {outOfStock ? t('product.stock.out_of_stock') : t('product.add_to_cart')}
                   </button>
                 </div>
-                <button
-                  disabled={outOfStock}
-                  onClick={() => {
-                    if (!product) return;
-                    if (stockTracked && quantity > stockValue) {
-                      addToast(t('product.toast.max_stock', { qty: stockValue }), 'warning');
-                      setQuantity(Math.max(1, stockValue));
-                      return;
-                    }
-                    const result = addItem(
-                      product,
-                      customFieldValues,
-                      product.server_options?.[0]?.id,
-                      'addtocart',
-                      quantity
-                    );
-                    if (!result.ok) {
-                      addToast(t('cart.toast.subscription_conflict'), 'error');
-                      return;
-                    }
-                    addToast(t('product.toast.added_qty', { name: product.name, qty: quantity }), 'success');
-                    setQuantity(1);
-                  }}
-                  className="btn-primary flex-1 py-4 text-base disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  {outOfStock ? t('product.stock.out_of_stock') : t('product.add_to_cart')}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
@@ -516,3 +511,4 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+
