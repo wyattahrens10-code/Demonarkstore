@@ -62,6 +62,10 @@ function normalizedName(value) {
   return String(value || '').trim().toUpperCase();
 }
 
+function normalizedIdentifier(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
 function unixToMs(value) {
   const n = Number(value || 0);
   if (!Number.isFinite(n) || n <= 0) return 0;
@@ -112,18 +116,11 @@ async function loadUserSubscriptions(token) {
   return Array.isArray(data) ? data : Array.isArray(data?.subscriptions) ? data.subscriptions : [];
 }
 
-async function loadStorePaymentsForUser(user) {
-  const email = String(user?.email || '').trim();
-  if (!email) return [];
-
+async function loadRecentStorePayments() {
   const apiKey = await loadStoreApiKey();
   if (!apiKey) return [];
 
-  const params = new URLSearchParams({
-    page: '1',
-    max_page: '50',
-    identifier: email,
-  });
+  const params = new URLSearchParams({ page: '1', max_page: '50' });
   const response = await fetch(`${TIP4SERV_BASE}/store/payments?${params.toString()}`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -133,6 +130,21 @@ async function loadStorePaymentsForUser(user) {
   if (!response.ok) return [];
   const data = await response.json();
   return Array.isArray(data) ? data : Array.isArray(data?.payments) ? data.payments : [];
+}
+
+function paymentBelongsToUser(payment, user) {
+  const email = normalizedIdentifier(user?.email);
+  const username = normalizedIdentifier(user?.username);
+  const candidates = [
+    payment?.identifier,
+    payment?.email,
+    payment?.customer_email,
+    payment?.user_email,
+  ].map(normalizedIdentifier).filter(Boolean);
+
+  if (email && candidates.includes(email)) return true;
+  if (username && candidates.includes(username)) return true;
+  return false;
 }
 
 function findDemonVip(subscriptions) {
@@ -147,10 +159,11 @@ function isPaidStatus(value) {
     .includes(String(value || '').trim().toLowerCase());
 }
 
-function findTestDemonVipPayment(payments) {
+function findTestDemonVipPayment(payments, user) {
   const now = Date.now();
 
   return payments.find((payment) => {
+    if (!paymentBelongsToUser(payment, user)) return false;
     if (String(payment?.mode || '').trim().toLowerCase() !== 'test') return false;
     if (!isPaidStatus(payment?.status)) return false;
 
@@ -189,15 +202,15 @@ function logVipDiagnostic(user, subscriptions, storePayments) {
     amount: p?.amount ?? null,
     currency: p?.currency ?? null,
     gateway: p?.gateway ?? null,
-    identifier: p?.identifier ?? null,
-    username: p?.username ?? null,
+    identifier_kind: p?.identifier ? (String(p.identifier).includes('@') ? 'email_like' : 'other') : null,
+    belongs_to_authenticated_user: paymentBelongsToUser(p, user),
   }));
 
   console.log('[DEMON_VIP_DIAGNOSTIC]', JSON.stringify({
     tip4serv_user_id: Number(user?.id || 0),
     subscription_count: subscriptions.length,
     subscriptions: safeSubscriptions,
-    store_payment_count: storePayments.length,
+    raw_store_payment_count: storePayments.length,
     store_payments: safePayments,
   }));
 }
@@ -214,13 +227,14 @@ async function getVerifiedVip(token, user) {
     };
   }
 
-  // Test-only fallback: the customer account endpoints intentionally omit test
-  // purchases, so read the store payment feed using the private store API key.
-  // The query is filtered to the authenticated user's Tip4Serv email and only
-  // explicit mode="test" payments can satisfy this branch.
-  const storePayments = await loadStorePaymentsForUser(user);
+  // Test-only fallback. Tip4Serv's customer endpoints omit test purchases, and
+  // the store payment identifier filter can omit valid test rows. Fetch only the
+  // latest store payment page privately, then match the authenticated customer
+  // server-side. Explicit mode="test" is still mandatory, so this cannot grant
+  // a production VIP entitlement from an unpaid/live transaction.
+  const storePayments = await loadRecentStorePayments();
   logVipDiagnostic(user, subscriptions, storePayments);
-  const testPayment = findTestDemonVipPayment(storePayments);
+  const testPayment = findTestDemonVipPayment(storePayments, user);
   if (!testPayment) return null;
 
   const paidAt = unixToMs(testPayment?.date ?? testPayment?.created_at ?? testPayment?.start_date);
