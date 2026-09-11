@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Crown, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, Crown, ShieldCheck, ShoppingBag, Sparkles, Zap } from 'lucide-react';
 import { useStore } from '../../lib/store';
 
 export default function Hero() {
@@ -7,93 +7,47 @@ export default function Hero() {
   const title = store?.title || 'DemonArk';
 
   return (
-    <section className="v2-hero relative min-h-[94vh] overflow-hidden flex items-center pt-20">
-      <div className="absolute inset-0">
-        <img src="/background.png" alt="" className="v2-hero-bg absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,3,8,.98)_0%,rgba(8,3,7,.93)_42%,rgba(16,2,5,.58)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,#04050c_0%,transparent_38%,rgba(4,5,12,.72)_100%)]" />
-        <div className="absolute inset-0 v2-grid" />
-      </div>
+    <section className="relative overflow-hidden border-b border-red-500/10 bg-[#070709]">
+      <div className="relative min-h-[760px] lg:min-h-[820px]">
+        <img src="/background.png" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,5,7,.18)_0%,rgba(7,7,9,.76)_62%,#070709_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,7,9,.82),rgba(7,7,9,.18)_48%,rgba(80,5,8,.18))]" />
 
-      <div className="v2-orb v2-orb-one" />
-      <div className="v2-orb v2-orb-two" />
-      <div className="v2-ember-field" aria-hidden="true" />
-
-      <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-        <div className="grid lg:grid-cols-[1.02fr_.98fr] gap-12 lg:gap-20 items-center">
-          <div className="max-w-3xl">
-            <div className="v2-eyebrow v2-reveal">
-              <span className="v2-live-dot" />
-              Official DemonArk Store
-            </div>
-
-            <div className="mt-7 v2-reveal v2-delay-1">
-              <p className="text-red-400/90 text-xs sm:text-sm font-black uppercase tracking-[.34em] mb-4">Enter the inferno</p>
-              <h1 className="text-[3.6rem] sm:text-[5.2rem] lg:text-[6.7rem] font-black leading-[.82] tracking-[-.065em] text-white">
-                RULE THE
-                <span className="block v2-fire-text">ARK.</span>
-              </h1>
-            </div>
-
-            <p className="mt-7 max-w-xl text-base sm:text-lg text-slate-300/85 leading-relaxed v2-reveal v2-delay-2">
-              Claim VIP access and premium DemonArk upgrades through one focused storefront built for fast, secure checkout.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 v2-reveal v2-delay-3">
-              <Link to="/products" className="v2-main-cta group">
-                <Crown className="w-5 h-5" />
-                Enter the Store
-                <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
-              <div className="v2-secure-pill">
-                <ShieldCheck className="w-4 h-4 text-red-400" />
-                Secure checkout by Tip4Serv
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-14">
+          <div className="mx-auto max-w-5xl rounded-[28px] border border-red-500/25 bg-black/55 backdrop-blur-xl shadow-[0_30px_100px_rgba(0,0,0,.65)] overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent" />
+            <div className="px-6 sm:px-10 lg:px-14 py-10 lg:py-12 text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-4 py-2 text-[11px] font-black uppercase tracking-[.22em] text-red-300">
+                <span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444]" /> Official DemonArk Store
               </div>
-            </div>
-
-            <div className="mt-10 grid grid-cols-3 max-w-xl border-t border-red-500/15 pt-6 v2-reveal v2-delay-4">
-              <Feature icon={<Zap className="w-4 h-4" />} title="Fast" text="Checkout" />
-              <Feature icon={<Crown className="w-4 h-4" />} title="VIP" text="Access" />
-              <Feature icon={<ShieldCheck className="w-4 h-4" />} title="Secure" text="Payments" />
+              <div className="mt-6 flex justify-center">
+                {store?.logo ? <img src={store.logo} alt={title} className="h-28 sm:h-36 lg:h-40 w-auto object-contain drop-shadow-[0_0_30px_rgba(239,68,68,.35)]" /> : <Sparkles className="h-24 w-24 text-red-500" />}
+              </div>
+              <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] text-white">WELCOME TO <span className="text-red-500">DEMONARK</span></h1>
+              <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base lg:text-lg leading-relaxed text-slate-300">Premium upgrades, VIP access, and DemonArk currency in one clean storefront. Pick what you need and get back to the Ark.</p>
+              <div className="mt-7 flex flex-col sm:flex-row justify-center gap-3">
+                <Link to="/products" className="btn-primary px-8 py-4 group"><ShoppingBag className="h-5 w-5" /> Browse the Store <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></Link>
+                <div className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-black/40 px-6 py-4 text-sm text-slate-300"><ShieldCheck className="h-4 w-4 text-red-400" /> Secure checkout by Tip4Serv</div>
+              </div>
             </div>
           </div>
 
-          <div className="relative v2-reveal v2-delay-2">
-            <div className="v2-sigil-wrap">
-              <div className="v2-sigil-ring v2-ring-a" />
-              <div className="v2-sigil-ring v2-ring-b" />
-              <div className="v2-sigil-glow" />
-              <div className="v2-logo-card">
-                <div className="absolute inset-0 v2-card-grid" />
-                <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-red-400/80 to-transparent" />
-                {store?.logo ? (
-                  <img src={store.logo} alt={title} className="relative z-10 w-[78%] max-w-[470px] object-contain v2-logo-float" />
-                ) : (
-                  <div className="relative z-10 text-center">
-                    <Sparkles className="w-12 h-12 text-red-400 mx-auto mb-5" />
-                    <div className="text-5xl font-black v2-fire-text">DEMONARK</div>
-                  </div>
-                )}
-              </div>
-              <div className="v2-corner-tag">DEMONARK // V2</div>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <Link to="/products" className="group rounded-2xl border border-red-500/20 bg-[#101012]/90 p-6 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-500/55 hover:shadow-[0_18px_45px_rgba(220,38,38,.12)]">
+              <div className="flex items-center justify-between"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/10 text-red-400"><Zap className="h-5 w-5" /></div><ArrowRight className="h-5 w-5 text-slate-600 transition group-hover:translate-x-1 group-hover:text-red-400" /></div>
+              <h2 className="mt-6 text-xl font-black text-white">VIP COINS</h2><p className="mt-2 text-sm leading-relaxed text-slate-400">Choose a coin package and power up your DemonArk account.</p><div className="mt-5 h-px bg-gradient-to-r from-red-500 via-red-500/30 to-transparent" />
+            </Link>
+            <Link to="/products" className="group rounded-2xl border border-red-500/20 bg-[#101012]/90 p-6 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-500/55 hover:shadow-[0_18px_45px_rgba(220,38,38,.12)]">
+              <div className="flex items-center justify-between"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/10 text-red-400"><Crown className="h-5 w-5" /></div><ArrowRight className="h-5 w-5 text-slate-600 transition group-hover:translate-x-1 group-hover:text-red-400" /></div>
+              <h2 className="mt-6 text-xl font-black text-white">DEMON VIP</h2><p className="mt-2 text-sm leading-relaxed text-slate-400">Unlock the premium DemonArk membership experience for 30 days.</p><div className="mt-5 h-px bg-gradient-to-r from-red-500 via-red-500/30 to-transparent" />
+            </Link>
+            <div className="rounded-2xl border border-white/10 bg-[#101012]/90 p-6 backdrop-blur-md">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/10 text-red-400"><ShieldCheck className="h-5 w-5" /></div>
+              <h2 className="mt-6 text-xl font-black text-white">FAST & SECURE</h2><p className="mt-2 text-sm leading-relaxed text-slate-400">A focused checkout flow powered by Tip4Serv with store access available anytime.</p><div className="mt-5 flex gap-5 text-[10px] font-bold uppercase tracking-[.16em] text-slate-500"><span>24/7 Store</span><span>Secure Pay</span></div>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#04050c] to-transparent" />
     </section>
-  );
-}
-
-function Feature({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
-  return (
-    <div className="flex items-center gap-2.5 border-l border-red-500/15 first:border-l-0 px-3 first:pl-0 sm:px-5">
-      <span className="text-red-400">{icon}</span>
-      <div>
-        <div className="text-sm sm:text-base font-extrabold text-white">{title}</div>
-        <div className="text-[10px] sm:text-xs uppercase tracking-[.16em] text-slate-500">{text}</div>
-      </div>
-    </div>
   );
 }
