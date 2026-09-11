@@ -5,6 +5,7 @@ import { useCart } from '../lib/cart';
 import { useStore } from '../lib/store';
 import { useToast } from '../lib/toast';
 import { usePageTitle } from '../lib/usePageTitle';
+import { useTip4ServAuth } from '../lib/tip4servAuth';
 import { computeExtrasPrice } from '../lib/pricing';
 import { createCheckout, getCheckoutIdentifiers } from '../lib/api';
 import { formatMoney } from '../lib/utils';
@@ -24,7 +25,8 @@ function identifierPlaceholder(id: string) {
 }
 
 export default function DemonArkCheckoutPage() {
-  const navigate=useNavigate(); const {items,removeItem,updateQuantity}=useCart(); const {store}=useStore(); const {addToast}=useToast(); const currency=store?.currency;
+  const navigate=useNavigate(); const {items,removeItem,updateQuantity}=useCart(); const {store}=useStore(); const {addToast}=useToast(); const {token}=useTip4ServAuth(); const currency=store?.currency;
+  const apiBaseUrl=(import.meta.env.VITE_API_BASE_URL||'').replace(/\/$/,'');
   const [requiredIdentifiers,setRequiredIdentifiers]=useState<string[]>([]); const [identifierValues,setIdentifierValues]=useState<Record<string,string>>({}); const [discordTag,setDiscordTag]=useState(''); const [selectedServer,setSelectedServer]=useState('DemonArk 10x'); const [loadingInit,setLoadingInit]=useState(true); const [loadingCheckout,setLoadingCheckout]=useState(false); const [isRedirecting,setIsRedirecting]=useState(false); const [acceptedTerms,setAcceptedTerms]=useState(false); const [error,setError]=useState<string|null>(null);
   usePageTitle('Complete your order');
   const cartTotal=useMemo(()=>items.reduce((sum,item)=>sum+(item.product.price+computeExtrasPrice(item.product.custom_fields,item.customFieldValues))*item.quantity,0),[items]);
@@ -32,12 +34,43 @@ export default function DemonArkCheckoutPage() {
   useEffect(()=>{try{const saved=localStorage.getItem('demonark-checkout-profile');if(!saved)return;const p=JSON.parse(saved);if(p.identifiers)setIdentifierValues(p.identifiers);if(p.discordTag)setDiscordTag(p.discordTag);if(p.server&&LAUNCH_SERVERS.includes(p.server))setSelectedServer(p.server);}catch{}},[]);
   useEffect(()=>{try{localStorage.setItem('demonark-checkout-profile',JSON.stringify({identifiers:identifierValues,discordTag,server:selectedServer}));}catch{}},[identifierValues,discordTag,selectedServer]);
 
+  useEffect(()=>{
+    if(!token||!requiredIdentifiers.length)return;
+    let cancelled=false;
+    fetch(`${apiBaseUrl}/api/account/identity`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}})
+      .then(async res=>{if(!res.ok)throw new Error('Unable to load saved DemonArk identity.');return res.json();})
+      .then(data=>{
+        if(cancelled)return;
+        const profile=data?.profile;
+        if(!profile)return;
+        if(profile.eos_id){
+          const eosKey=requiredIdentifiers.find(id=>id==='username'||id==='eos_id');
+          if(eosKey)setIdentifierValues(prev=>prev[eosKey]?prev:{...prev,[eosKey]:String(profile.eos_id)});
+        }
+        if(profile.discord_global_name||profile.discord_username)setDiscordTag(prev=>prev||String(profile.discord_global_name||profile.discord_username));
+        if(profile.server_key&&LAUNCH_SERVERS.includes(String(profile.server_key)))setSelectedServer(String(profile.server_key));
+      })
+      .catch(()=>{});
+    return()=>{cancelled=true;};
+  },[token,requiredIdentifiers,apiBaseUrl]);
+
   const handleCheckout=useCallback(async()=>{
     if(!acceptedTerms){addToast('Please accept the store terms before continuing.','warning');return;} if(!store?.id){addToast('The store is unavailable right now. Please try again.','error');return;}
     for(const id of requiredIdentifiers){if(!identifierValues[id]?.trim()){addToast(`${identifierLabel(id)} is required.`,'warning');return;}} if(!discordTag.trim()){addToast('Discord Tag is required.','warning');return;} if(!selectedServer){addToast('Please select your DemonArk server.','warning');return;}
     setError(null);setLoadingCheckout(true);
-    try{const products:CheckoutProduct[]=items.map(item=>{const cp:CheckoutProduct={product_id:Number(item.product.id),product_slug:item.product.slug,type:item.purchaseType||'addtocart',quantity:item.quantity};if(item.selectedServer!==undefined)cp.server_selection=item.selectedServer;if(item.product.custom_fields?.length){const validIds=new Set(item.product.custom_fields.map(f=>String(f.id)));const fields:Record<string,string|number>={};Object.entries(item.customFieldValues).forEach(([k,v])=>{if(validIds.has(k)&&v!==''&&v!==undefined&&v!==null)fields[k]=v;});if(Object.keys(fields).length)cp.custom_fields=fields;}return cp;});const user:CheckoutUser={};requiredIdentifiers.forEach(id=>{const v=identifierValues[id]?.trim();if(v)(user as Record<string,string>)[id]=v;});const origin=location.origin;const body:CheckoutBody={products,redirect_success_checkout:`${origin}/checkout/success`,redirect_canceled_checkout:`${origin}/checkout/canceled`};if(Object.keys(user).length)body.user=user;const result=await createCheckout(store.id,body);setIsRedirecting(true);location.href=result.url;}catch(err){const msg=err instanceof Error?err.message.split('\n\nDEBUG_PAYLOAD:')[0]:'Checkout failed. Please try again.';setError(msg);addToast(msg,'error',5000);setLoadingCheckout(false);}
-  },[acceptedTerms,store,requiredIdentifiers,identifierValues,discordTag,selectedServer,items,addToast]);
+    try{
+      const eosKey=requiredIdentifiers.find(id=>id==='username'||id==='eos_id');
+      const eosId=eosKey?identifierValues[eosKey]?.trim():'';
+      if(token){
+        const identityRes=await fetch(`${apiBaseUrl}/api/account/identity`,{method:'PUT',headers:{Authorization:`Bearer ${token}`,Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({eos_id:eosId||null,server_key:selectedServer})});
+        const identityData=await identityRes.json().catch(()=>({}));
+        if(!identityRes.ok)throw new Error(identityData?.error||'Unable to save your DemonArk player identity.');
+      }
+
+      const products:CheckoutProduct[]=items.map(item=>{const cp:CheckoutProduct={product_id:Number(item.product.id),product_slug:item.product.slug,type:item.purchaseType||'addtocart',quantity:item.quantity};if(item.selectedServer!==undefined)cp.server_selection=item.selectedServer;if(item.product.custom_fields?.length){const validIds=new Set(item.product.custom_fields.map(f=>String(f.id)));const fields:Record<string,string|number>={};Object.entries(item.customFieldValues).forEach(([k,v])=>{if(validIds.has(k)&&v!==''&&v!==undefined&&v!==null)fields[k]=v;});if(Object.keys(fields).length)cp.custom_fields=fields;}return cp;});
+      const user:CheckoutUser={};requiredIdentifiers.forEach(id=>{const v=identifierValues[id]?.trim();if(v)(user as Record<string,string>)[id]=v;});const origin=location.origin;const body:CheckoutBody={products,redirect_success_checkout:`${origin}/checkout/success`,redirect_canceled_checkout:`${origin}/checkout/canceled`};if(Object.keys(user).length)body.user=user;const result=await createCheckout(store.id,body);setIsRedirecting(true);location.href=result.url;
+    }catch(err){const msg=err instanceof Error?err.message.split('\n\nDEBUG_PAYLOAD:')[0]:'Checkout failed. Please try again.';setError(msg);addToast(msg,'error',5000);setLoadingCheckout(false);}
+  },[acceptedTerms,store,requiredIdentifiers,identifierValues,discordTag,selectedServer,items,addToast,token,apiBaseUrl]);
 
   if(isRedirecting)return <div className="pt-36 pb-20 px-4 text-center"><div className="mx-auto max-w-md rounded-3xl border border-red-500/20 bg-[#19191b] p-8"><Lock className="mx-auto h-12 w-12 text-red-500"/><h1 className="mt-5 text-2xl font-black text-white">Opening secure payment</h1><p className="mt-3 text-zinc-400">You're being redirected to Tip4Serv to complete your purchase.</p><div className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-red-400"><Loader2 className="h-4 w-4 animate-spin"/> Redirecting…</div></div></div>;
   if(!items.length&&!loadingInit)return <div className="pt-36 pb-20 px-4 text-center"><ShoppingBag className="mx-auto h-12 w-12 text-zinc-600"/><h1 className="mt-5 text-2xl font-black text-white">Your cart is empty</h1><Link to="/products" className="mt-6 inline-flex rounded-xl bg-red-600 px-6 py-3 font-bold text-white">Back to shop</Link></div>;
