@@ -9,6 +9,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import CartDrawer from './components/cart/CartDrawer';
 import ToastContainer from './components/ui/ToastContainer';
+import AccountDiscordEnhancer from './components/account/AccountDiscordEnhancer';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -42,6 +43,7 @@ export default function App() {
                       <Route path="/auth/discord/callback" element={<DiscordOAuthCallbackPage />} />
                       <Route path="/admin" element={<AdminPage />} />
                     </Routes>
+                    <AccountDiscordEnhancer />
                   </main>
                   <Footer />
                   <CartDrawer />
