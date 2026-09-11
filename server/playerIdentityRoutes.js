@@ -6,6 +6,7 @@ const router = express.Router();
 const TIP4SERV_BASE = 'https://api.tip4serv.com/v1';
 const DEMON_VIP_NAME = 'DEMON VIP';
 const DEMON_VIP_DISCOUNT_PERCENT = 20;
+const DEMON_VIP_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const VIP_COUPON_TTL_MS = 15 * 60 * 1000;
 
 function jsonError(res, status, message) {
@@ -67,12 +68,32 @@ function unixToMs(value) {
   return n > 1e12 ? n : n * 1000;
 }
 
+function getMembershipExpiresAt(subscription) {
+  const explicitExpiry = unixToMs(subscription?.expire_date);
+  if (explicitExpiry) return explicitExpiry;
+
+  if (subscription?.onetime) {
+    const startedAt = unixToMs(subscription?.start_date);
+    if (startedAt) return startedAt + DEMON_VIP_DURATION_MS;
+  }
+
+  return 0;
+}
+
 function isActiveSubscription(subscription) {
   const status = String(subscription?.status || '').trim().toLowerCase();
-  const activeStatus = ['active', 'processed', 'complete', 'completed', 'succeeded', 'success'].includes(status);
-  if (!activeStatus) return false;
+  const paidStatus = [
+    'paid',
+    'active',
+    'processed',
+    'complete',
+    'completed',
+    'succeeded',
+    'success',
+  ].includes(status);
+  if (!paidStatus) return false;
 
-  const expiresAt = unixToMs(subscription?.expire_date);
+  const expiresAt = getMembershipExpiresAt(subscription);
   if (expiresAt && expiresAt <= Date.now()) return false;
 
   return true;
@@ -86,7 +107,7 @@ async function loadUserSubscriptions(token) {
       Accept: 'application/json',
     },
   });
-  if (!response.ok) throw new Error('Unable to verify Demon VIP subscription right now.');
+  if (!response.ok) throw new Error('Unable to verify Demon VIP membership right now.');
   const data = await response.json();
   return Array.isArray(data) ? data : Array.isArray(data?.subscriptions) ? data.subscriptions : [];
 }
@@ -106,14 +127,18 @@ async function getVerifiedVip(token) {
 router.get('/vip-status', requireTip4ServUser, async (req, res) => {
   try {
     const vip = await getVerifiedVip(req.tip4servToken);
+    const expiresAt = vip ? getMembershipExpiresAt(vip) : 0;
 
     res.json({
       active: Boolean(vip),
       name: DEMON_VIP_NAME,
       discount_percent: vip ? DEMON_VIP_DISCOUNT_PERCENT : 0,
+      membership_type: vip ? (vip.onetime ? 'one_time' : 'recurring') : null,
+      active_until: expiresAt ? new Date(expiresAt).toISOString() : null,
       subscription: vip ? {
         id: vip.id ?? null,
         status: vip.status ?? null,
+        onetime: Boolean(vip.onetime),
         start_date: vip.start_date ?? null,
         next_payment: vip.next_payment ?? null,
         expire_date: vip.expire_date ?? null,
@@ -122,14 +147,14 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
       verified_at: new Date().toISOString(),
     });
   } catch (err) {
-    jsonError(res, 502, err instanceof Error ? err.message : 'Unable to verify Demon VIP subscription.');
+    jsonError(res, 502, err instanceof Error ? err.message : 'Unable to verify Demon VIP membership.');
   }
 });
 
 router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
   try {
     const vip = await getVerifiedVip(req.tip4servToken);
-    if (!vip) return jsonError(res, 403, 'An active DEMON VIP subscription is required for this discount.');
+    if (!vip) return jsonError(res, 403, 'An active DEMON VIP membership is required for this discount.');
 
     const productIds = Array.from(new Set(
       (Array.isArray(req.body?.product_ids) ? req.body.product_ids : [])
