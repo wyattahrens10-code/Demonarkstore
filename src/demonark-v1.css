@@ -52,9 +52,24 @@ header nav button {
 }
 
 .da-logo-pulse {
-  animation: da-logo-breathe 2.4s ease-in-out infinite;
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  border-radius: 28px;
+  animation: da-logo-breathe 1.7s ease-in-out infinite;
   transform-origin: center;
   filter: drop-shadow(0 0 0 rgba(239,68,68,0));
+}
+
+.da-logo-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 34%, rgba(255,255,255,.04) 42%, rgba(255,255,255,.62) 50%, rgba(255,210,210,.16) 57%, transparent 67%);
+  transform: translateX(-155%) rotate(5deg);
+  animation: da-logo-sheen 3.1s ease-in-out infinite;
+  mix-blend-mode: screen;
 }
 
 .da-logo-pulse:hover {
@@ -62,7 +77,20 @@ header nav button {
 }
 
 .da-action-pulse {
-  animation: da-action-breathe 2.2s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+  animation: da-action-breathe 1.65s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.da-action-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 27%, rgba(255,255,255,.05) 41%, rgba(255,255,255,.34) 49%, rgba(255,255,255,.07) 57%, transparent 70%);
+  transform: translateX(-145%);
+  animation: da-action-sheen 3.4s ease-in-out infinite;
 }
 
 .da-action-pulse:hover {
@@ -72,16 +100,6 @@ header nav button {
 .da-discord-button {
   position: relative;
   overflow: hidden;
-}
-
-.da-discord-button::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(110deg, transparent 28%, rgba(255,255,255,.08) 48%, transparent 68%);
-  transform: translateX(-140%);
-  animation: da-discord-sheen 3.8s ease-in-out infinite;
 }
 
 .da-portal {
@@ -107,19 +125,41 @@ header nav button {
 }
 
 @keyframes da-logo-breathe {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(239,68,68,0)); }
-  50% { transform: scale(1.045); filter: drop-shadow(0 0 18px rgba(239,68,68,.24)); }
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px rgba(239,68,68,.12));
+  }
+  50% {
+    transform: scale(1.095);
+    filter: drop-shadow(0 0 30px rgba(239,68,68,.48));
+  }
+}
+
+@keyframes da-logo-sheen {
+  0%, 54% { transform: translateX(-155%) rotate(5deg); opacity: 0; }
+  61% { opacity: .95; }
+  80% { transform: translateX(155%) rotate(5deg); opacity: .95; }
+  88%, 100% { transform: translateX(155%) rotate(5deg); opacity: 0; }
 }
 
 @keyframes da-action-breathe {
-  0%, 100% { box-shadow: 0 12px 38px rgba(127,29,29,.22); }
-  50% { box-shadow: 0 16px 52px rgba(239,68,68,.34); }
+  0%, 100% {
+    scale: 1;
+    box-shadow: 0 12px 38px rgba(127,29,29,.24);
+    filter: brightness(1);
+  }
+  50% {
+    scale: 1.045;
+    box-shadow: 0 18px 58px rgba(239,68,68,.48);
+    filter: brightness(1.08);
+  }
 }
 
-@keyframes da-discord-sheen {
-  0%, 62% { transform: translateX(-140%); opacity: 0; }
-  72% { opacity: 1; }
-  100% { transform: translateX(140%); opacity: 0; }
+@keyframes da-action-sheen {
+  0%, 60% { transform: translateX(-145%); opacity: 0; }
+  68% { opacity: 1; }
+  86% { transform: translateX(145%); opacity: 1; }
+  94%, 100% { transform: translateX(145%); opacity: 0; }
 }
 
 @keyframes da-slide-in {
@@ -138,6 +178,7 @@ header nav button {
   .da-home-bg { transform: scale(1.015); }
   .da-feature-slide,
   .da-logo-pulse,
+  .da-logo-pulse::after,
   .da-action-pulse,
-  .da-discord-button::after { animation: none; }
+  .da-action-pulse::after { animation: none; }
 }
