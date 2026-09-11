@@ -74,11 +74,17 @@ export async function getCategories(): Promise<CategoriesResponse> {
     action: 'categories',
     limit: '50',
   });
-  response.categories = response.categories.map(cat => ({
-    ...cat,
-    name: decodeHtmlEntities(cat.name),
-    description: cat.description ? decodeHtmlEntities(cat.description) : cat.description,
-  }));
+  response.categories = response.categories
+    .map(cat => ({
+      ...cat,
+      name: decodeHtmlEntities(cat.name),
+      description: cat.description ? decodeHtmlEntities(cat.description) : cat.description,
+    }))
+    .filter(cat => {
+      const name = (cat.name || '').trim().toLowerCase();
+      const slug = (cat.slug || '').trim().toLowerCase();
+      return name !== 'home' && slug !== 'home';
+    });
   return response;
 }
 
@@ -225,4 +231,3 @@ export async function createCheckout(
   }
   return res.json();
 }
-
