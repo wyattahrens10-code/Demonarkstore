@@ -121,27 +121,37 @@ export default function Hero() {
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/78 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300 backdrop-blur-md"><ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv</div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-32 pt-8 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-2">
-          <PortalCard image="/vipcoinpile.png" fallbackImage="/VIPCOINLOGO.png" title="VIP COINS" subtitle="Premium currency" href={categoryHref(['vip coin'])} />
-          <PortalCard image="/demonarkvipbanner.png" title="DEMON VIP" subtitle="30 day membership" href={categoryHref(['demon vip'])} />
-          <PortalCard image="/misccatagorylogo.png" title="MISC" subtitle="Extras and special items" href={categoryHref(['misc'])} />
-          <PortalCard image="/privateservercatagorylogo.png" title="PRIVATE SERVERS" subtitle="Your own DemonArk experience" href={categoryHref(['private'])} />
-        </div>
-      </div>
-
       <div className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div><div className="text-xs font-black uppercase tracking-[.24em] text-red-400">DemonArk picks</div><h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">Featured</h2></div>
-          {featuredProducts.length > 1 && <div className="flex gap-2"><button onClick={previousFeature} aria-label="Previous featured item" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowLeft className="h-5 w-5" /></button><button onClick={nextFeature} aria-label="Next featured item" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowRight className="h-5 w-5" /></button></div>}
+        <div className="grid gap-6 lg:grid-cols-[1.04fr_.96fr] lg:items-stretch">
+          <div className="min-h-[420px] lg:min-h-[560px]">
+            {currentFeature ? (
+              <Link key={currentFeature.id} to={`/product/${currentFeature.slug}`} className="da-feature-slide group da-panel relative flex h-full min-h-[420px] overflow-hidden rounded-3xl lg:min-h-[560px]">
+                {currentFeature.image ? <img src={currentFeature.image} alt={currentFeature.name} className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.06]" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-zinc-900 to-black" />}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111113] via-black/25 to-black/5" />
+                <div className="absolute left-5 top-5 z-10 rounded-full border border-red-400/25 bg-[#151517]/80 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.2em] text-red-300 backdrop-blur-md sm:left-6 sm:top-6">Featured DemonArk</div>
+                {featuredProducts.length > 1 && (
+                  <div className="absolute right-5 top-5 z-20 flex gap-2 sm:right-6 sm:top-6">
+                    <button onClick={(event) => { event.preventDefault(); previousFeature(); }} aria-label="Previous featured item" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 backdrop-blur-md transition hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowLeft className="h-4 w-4" /></button>
+                    <button onClick={(event) => { event.preventDefault(); nextFeature(); }} aria-label="Next featured item" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 backdrop-blur-md transition hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowRight className="h-4 w-4" /></button>
+                  </div>
+                )}
+                <div className="relative z-10 mt-auto w-full p-7 text-left sm:p-9 lg:p-10">
+                  <h2 className="max-w-xl text-3xl font-black uppercase leading-tight text-white sm:text-4xl lg:text-5xl">{currentFeature.name}</h2>
+                  <div className="mt-4 text-3xl font-black text-white">{formatMoney(currentFeature.price, store?.currency)}</div>
+                  <div className="mt-6 inline-flex w-fit items-center gap-3 rounded-xl bg-red-700 px-5 py-3 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_35px_rgba(185,28,28,.35)] transition group-hover:-translate-y-1 group-hover:bg-red-600 group-hover:shadow-[0_18px_45px_rgba(220,38,38,.5)]">View item <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></div>
+                  {featuredProducts.length > 1 && <div className="mt-5 flex gap-2">{featuredProducts.map((product, index) => <button key={product.id} onClick={(event) => { event.preventDefault(); setActiveFeature(index); }} aria-label={`Show ${product.name}`} className={`h-2.5 rounded-full transition-all ${index === activeFeature ? 'w-9 bg-red-500' : 'w-2.5 bg-white/30 hover:bg-white/50'}`} />)}</div>}
+                </div>
+              </Link>
+            ) : <div className="da-panel flex h-full min-h-[420px] items-center justify-center rounded-3xl px-6 text-center text-zinc-400 lg:min-h-[560px]">Featured DemonArk items will appear here as soon as they are available.</div>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-rows-2">
+            <PortalCard image="/vipcoinpile.png" fallbackImage="/VIPCOINLOGO.png" title="VIP COINS" subtitle="Premium currency" href={categoryHref(['vip coin'])} />
+            <PortalCard image="/demonarkvipbanner.png" title="DEMON VIP" subtitle="30 day membership" href={categoryHref(['demon vip'])} />
+            <PortalCard image="/misccatagorylogo.png" title="MISC" subtitle="Extras and special items" href={categoryHref(['misc'])} />
+            <PortalCard image="/privateservercatagorylogo.png" title="PRIVATE SERVERS" subtitle="Your own DemonArk experience" href={categoryHref(['private'])} />
+          </div>
         </div>
-        {currentFeature ? (
-          <Link key={currentFeature.id} to={`/product/${currentFeature.slug}`} className="da-feature-slide group da-panel grid min-h-[420px] overflow-hidden rounded-3xl lg:grid-cols-[1.18fr_.82fr]">
-            <div className="relative min-h-[300px] overflow-hidden lg:min-h-[520px]">{currentFeature.image ? <img src={currentFeature.image} alt={currentFeature.name} className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.06]" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-zinc-900 to-black" />}<div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-[#111113]/80 lg:bg-gradient-to-r lg:from-transparent lg:via-black/5 lg:to-[#111113]" /></div>
-            <div className="relative flex flex-col justify-center p-7 sm:p-10 lg:p-12"><div className="text-xs font-black uppercase tracking-[.22em] text-red-400">Featured DemonArk</div><h3 className="mt-4 text-3xl font-black uppercase leading-tight text-white sm:text-4xl lg:text-5xl">{currentFeature.name}</h3><div className="mt-5 text-3xl font-black text-white">{formatMoney(currentFeature.price, store?.currency)}</div><div className="mt-7 inline-flex w-fit items-center gap-3 rounded-xl bg-red-700 px-6 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_35px_rgba(185,28,28,.35)] transition group-hover:-translate-y-1 group-hover:bg-red-600 group-hover:shadow-[0_18px_45px_rgba(220,38,38,.5)]">View item <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></div></div>
-          </Link>
-        ) : <div className="da-panel flex min-h-[320px] items-center justify-center rounded-3xl px-6 text-center text-zinc-400">Featured DemonArk items will appear here as soon as they are available.</div>}
-        {featuredProducts.length > 1 && <div className="mt-6 flex justify-center gap-2">{featuredProducts.map((product, index) => <button key={product.id} onClick={() => setActiveFeature(index)} aria-label={`Show ${product.name}`} className={`h-2.5 rounded-full transition-all ${index === activeFeature ? 'w-9 bg-red-500' : 'w-2.5 bg-white/25 hover:bg-white/45'}`} />)}</div>}
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
@@ -158,10 +168,10 @@ export default function Hero() {
 
 function PortalCard({ image, fallbackImage, title, subtitle, href }: { image: string; fallbackImage?: string; title: string; subtitle: string; href: string }) {
   return (
-    <Link to={href} className="da-portal group relative h-[280px] overflow-hidden rounded-2xl border border-white/10 bg-[#131315]/85 transition duration-500 hover:-translate-y-2 hover:border-red-400/60 hover:shadow-[0_28px_80px_rgba(127,29,29,.34)] sm:h-[340px]">
+    <Link to={href} className="da-portal group relative h-[175px] overflow-hidden rounded-2xl border border-white/10 bg-[#131315]/85 transition duration-500 hover:-translate-y-1.5 hover:border-red-400/60 hover:shadow-[0_24px_60px_rgba(127,29,29,.30)] sm:h-[230px] lg:h-full lg:min-h-[270px]">
       <img src={image} alt={title} onError={(event) => { if (fallbackImage && event.currentTarget.src !== fallbackImage) event.currentTarget.src = fallbackImage; }} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-[1.14]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-6"><div><div className="text-2xl font-black text-white drop-shadow-lg">{title}</div><div className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-red-300">{subtitle}</div></div><div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-400/40 bg-red-700/90 text-white shadow-[0_0_25px_rgba(239,68,68,.28)] transition duration-300 group-hover:scale-115 group-hover:bg-red-500"><ArrowRight className="h-5 w-5" /></div></div>
+      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5"><div className="min-w-0"><div className="text-base font-black leading-tight text-white drop-shadow-lg sm:text-xl">{title}</div><div className="mt-1 hidden text-[10px] font-bold uppercase tracking-[.14em] text-red-300 sm:block">{subtitle}</div></div><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-400/40 bg-red-700/90 text-white shadow-[0_0_20px_rgba(239,68,68,.24)] transition duration-300 group-hover:scale-110 group-hover:bg-red-500"><ArrowRight className="h-4 w-4" /></div></div>
     </Link>
   );
 }
