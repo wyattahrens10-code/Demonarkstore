@@ -153,14 +153,21 @@ header nav button {
     opacity: 0;
     clip-path: polygon(22% 18%, 28% 18%, 42% 74%, 35% 74%);
   }
-  62% { opacity: .72; }
+  62% {
+    opacity: .72;
+    clip-path: polygon(31% 21%, 37% 21%, 49% 71%, 42% 71%);
+  }
+  70% {
+    opacity: .8;
+    clip-path: polygon(45% 25%, 50% 25%, 60% 67%, 54% 67%);
+  }
   78% {
     opacity: .82;
-    clip-path: polygon(58% 18%, 64% 18%, 76% 74%, 69% 74%);
+    clip-path: polygon(59% 30%, 64% 30%, 73% 62%, 67% 62%);
   }
   86%, 100% {
     opacity: 0;
-    clip-path: polygon(58% 18%, 64% 18%, 76% 74%, 69% 74%);
+    clip-path: polygon(59% 30%, 64% 30%, 73% 62%, 67% 62%);
   }
 }
 
