@@ -40,7 +40,7 @@ export default function DiscordOAuthCallbackPage() {
 
     if (!code) {
       setStatus('error');
-      setMessage('Code OAuth manquant.');
+      setMessage('Missing OAuth code.');
       return;
     }
 
@@ -70,7 +70,7 @@ export default function DiscordOAuthCallbackPage() {
       .then(async (res) => {
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data?.id) {
-          const msg = data?.error || `Erreur Discord (${res.status}).`;
+          const msg = data?.error || `Discord error (${res.status}).`;
           throw new Error(msg);
         }
         setStatus('success');
@@ -109,21 +109,21 @@ export default function DiscordOAuthCallbackPage() {
         {status === 'pending' && (
           <>
             <Loader2 className="w-10 h-10 text-red-500 animate-spin mx-auto mb-4" />
-            <h1 className="text-lg font-bold text-heading mb-2">Connexion à Discord...</h1>
-            <p className="text-sm text-volcanic-400">Récupération de votre identifiant en cours.</p>
+            <h1 className="text-lg font-bold text-heading mb-2">Connecting to Discord...</h1>
+            <p className="text-sm text-volcanic-400">Retrieving your Discord account.</p>
           </>
         )}
         {status === 'success' && (
           <>
             <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-4" />
-            <h1 className="text-lg font-bold text-heading mb-2">Identifiant récupéré</h1>
-            <p className="text-sm text-volcanic-400">Bienvenue {message}. Vous pouvez fermer cette fenêtre.</p>
+            <h1 className="text-lg font-bold text-heading mb-2">Discord connected</h1>
+            <p className="text-sm text-volcanic-400">Welcome {message}. You can close this window.</p>
           </>
         )}
         {status === 'error' && (
           <>
             <AlertCircle className="w-10 h-10 text-rose-400 mx-auto mb-4" />
-            <h1 className="text-lg font-bold text-heading mb-2">Connexion impossible</h1>
+            <h1 className="text-lg font-bold text-heading mb-2">Unable to connect Discord</h1>
             <p className="text-sm text-volcanic-400 break-all">{message}</p>
           </>
         )}
