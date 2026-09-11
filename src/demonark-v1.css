@@ -151,16 +151,16 @@ header nav button {
 @keyframes da-logo-copy-sheen {
   0%, 56% {
     opacity: 0;
-    clip-path: polygon(14% 0%, 22% 0%, 42% 100%, 32% 100%);
+    clip-path: polygon(22% 0%, 28% 0%, 44% 100%, 36% 100%);
   }
   62% { opacity: .72; }
   78% {
     opacity: .82;
-    clip-path: polygon(56% 0%, 64% 0%, 82% 100%, 72% 100%);
+    clip-path: polygon(48% 0%, 54% 0%, 68% 100%, 60% 100%);
   }
   86%, 100% {
     opacity: 0;
-    clip-path: polygon(56% 0%, 64% 0%, 82% 100%, 72% 100%);
+    clip-path: polygon(48% 0%, 54% 0%, 68% 100%, 60% 100%);
   }
 }
 
