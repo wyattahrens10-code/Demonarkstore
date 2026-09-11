@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Check, ExternalLink, Link2, Loader2, Unlink } from 'lucide-react';
 import { useToast } from '../../lib/toast';
+import { useTip4ServAuth } from '../../lib/tip4servAuth';
 
 const STORAGE_KEY = 'demonark-discord-link';
 const CHECKOUT_PROFILE_KEY = 'demonark-checkout-profile';
@@ -35,9 +36,12 @@ function syncDiscordToCheckout(link: DemonArkDiscordLink | null) {
 
 export default function DiscordLinkCard() {
   const { addToast } = useToast();
+  const { token } = useTip4ServAuth();
   const [linked, setLinked] = useState<DemonArkDiscordLink | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [loadingSavedLink, setLoadingSavedLink] = useState(false);
   const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID as string | undefined;
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
   useEffect(() => {
     const existing = readDiscordLink();
@@ -45,16 +49,73 @@ export default function DiscordLinkCard() {
     if (existing) syncDiscordToCheckout(existing);
   }, []);
 
-  const saveLink = useCallback((link: DemonArkDiscordLink) => {
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    setLoadingSavedLink(true);
+
+    fetch(`${apiBaseUrl}/api/account/identity`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Unable to load saved DemonArk identity.');
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        const profile = data?.profile;
+        if (!profile?.discord_id) return;
+        const restored: DemonArkDiscordLink = {
+          id: String(profile.discord_id),
+          username: String(profile.discord_username || profile.discord_id),
+          globalName: profile.discord_global_name || undefined,
+          linkedAt: profile.updated_at ? new Date(profile.updated_at).getTime() : Date.now(),
+        };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
+        syncDiscordToCheckout(restored);
+        setLinked(restored);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingSavedLink(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [token, apiBaseUrl]);
+
+  const saveLink = useCallback(async (link: DemonArkDiscordLink) => {
+    if (token) {
+      const res = await fetch(`${apiBaseUrl}/api/account/identity`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          discord_id: link.id,
+          discord_username: link.username,
+          discord_global_name: link.globalName || null,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Unable to save Discord link to DemonArk.');
+    }
+
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(link));
     syncDiscordToCheckout(link);
     setLinked(link);
     window.dispatchEvent(new CustomEvent('demonark-discord-link-changed', { detail: link }));
-  }, []);
+  }, [token, apiBaseUrl]);
 
   const connectDiscord = useCallback(() => {
     if (!clientId) {
       addToast('Discord linking is not configured yet.', 'error');
+      return;
+    }
+
+    if (!token) {
+      addToast('Sign in to your DemonArk account before linking Discord.', 'warning');
       return;
     }
 
@@ -89,15 +150,24 @@ export default function DiscordLinkCard() {
       setConnecting(false);
     };
 
-    const onMessage = (event: MessageEvent) => {
+    const onMessage = async (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       const data = event.data as { type?: string; ok?: boolean; id?: string; username?: string; global_name?: string; error?: string };
       if (!data || data.type !== 'discord-oauth') return;
 
       if (data.ok && data.id) {
-        const link: DemonArkDiscordLink = { id: data.id, username: data.username || data.id, globalName: data.global_name || undefined, linkedAt: Date.now() };
-        saveLink(link);
-        addToast(`Discord linked as ${link.globalName || link.username}.`, 'success');
+        const link: DemonArkDiscordLink = {
+          id: data.id,
+          username: data.username || data.id,
+          globalName: data.global_name || undefined,
+          linkedAt: Date.now(),
+        };
+        try {
+          await saveLink(link);
+          addToast(`Discord linked as ${link.globalName || link.username}.`, 'success');
+        } catch (err) {
+          addToast(err instanceof Error ? err.message : 'Discord linking failed.', 'error');
+        }
       } else {
         addToast(data.error || 'Discord linking failed.', 'error');
       }
@@ -106,14 +176,27 @@ export default function DiscordLinkCard() {
 
     window.addEventListener('message', onMessage);
     pollTimer = window.setInterval(() => { if (popup.closed) cleanup(); }, 500);
-  }, [clientId, addToast, saveLink]);
+  }, [clientId, token, addToast, saveLink]);
 
-  const disconnect = () => {
-    window.localStorage.removeItem(STORAGE_KEY);
-    syncDiscordToCheckout(null);
-    setLinked(null);
-    window.dispatchEvent(new CustomEvent('demonark-discord-link-changed', { detail: null }));
-    addToast('Discord account unlinked.', 'info');
+  const disconnect = async () => {
+    try {
+      if (token) {
+        const res = await fetch(`${apiBaseUrl}/api/account/discord`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || 'Unable to unlink Discord from DemonArk.');
+      }
+
+      window.localStorage.removeItem(STORAGE_KEY);
+      syncDiscordToCheckout(null);
+      setLinked(null);
+      window.dispatchEvent(new CustomEvent('demonark-discord-link-changed', { detail: null }));
+      addToast('Discord account unlinked.', 'info');
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Unable to unlink Discord.', 'error');
+    }
   };
 
   return (
@@ -132,10 +215,10 @@ export default function DiscordLinkCard() {
             <div className="min-w-0"><div className="text-sm font-bold text-white truncate">{linked.globalName || linked.username}</div><div className="mt-1 text-xs text-zinc-500 truncate">@{linked.username}</div><div className="mt-1 text-[11px] text-zinc-600">Discord ID: {linked.id}</div></div>
             <button onClick={disconnect} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs font-bold text-red-300 transition hover:bg-red-500/10"><Unlink className="h-4 w-4" /> Unlink</button>
           </div>
-          <p className="mt-3 border-t border-white/8 pt-3 text-xs leading-relaxed text-zinc-500">Your Discord name will automatically fill in during DemonArk checkout on this device.</p>
+          <p className="mt-3 border-t border-white/8 pt-3 text-xs leading-relaxed text-zinc-500">Linked to your DemonArk account and saved for checkout and future in-game fulfillment.</p>
         </div>
       ) : (
-        <div className="mt-5"><p className="text-sm leading-relaxed text-zinc-400">Link Discord once and DemonArk can automatically fill your Discord information during checkout.</p><button onClick={connectDiscord} disabled={connecting} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 font-black text-white transition hover:bg-[#4752c4] disabled:opacity-60 sm:w-auto">{connecting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Link2 className="h-5 w-5" />}{connecting ? 'Connecting Discord…' : 'Link Discord account'}{!connecting && <ExternalLink className="h-4 w-4 opacity-70" />}</button></div>
+        <div className="mt-5"><p className="text-sm leading-relaxed text-zinc-400">Link Discord once and DemonArk can save it to your player profile for checkout and future in-game fulfillment.</p><button onClick={connectDiscord} disabled={connecting || loadingSavedLink} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 font-black text-white transition hover:bg-[#4752c4] disabled:opacity-60 sm:w-auto">{connecting || loadingSavedLink ? <Loader2 className="h-5 w-5 animate-spin" /> : <Link2 className="h-5 w-5" />}{connecting ? 'Connecting Discord…' : loadingSavedLink ? 'Loading account…' : 'Link Discord account'}{!connecting && !loadingSavedLink && <ExternalLink className="h-4 w-4 opacity-70" />}</button></div>
       )}
     </div>
   );
