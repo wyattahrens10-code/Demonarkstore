@@ -26,10 +26,12 @@ header nav button {
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
-  transform: scale(var(--da-bg-scale, 1.02)) translate3d(0, var(--da-bg-shift, 0px), 0);
+  transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.015));
   transform-origin: 58% 48%;
   will-change: transform;
-  transition: transform 80ms linear;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: paint;
 }
 
 .da-home-shade {
@@ -84,6 +86,6 @@ header nav button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .da-home-bg { transition: none; transform: scale(1.02); }
+  .da-home-bg { transform: scale(1.015); }
   .da-feature-slide { animation: none; }
 }
