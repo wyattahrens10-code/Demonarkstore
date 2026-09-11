@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Crown, ShieldCheck, ShoppingBag, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../lib/store';
 
 export default function Hero() {
@@ -7,54 +7,26 @@ export default function Hero() {
   const title = store?.title || 'DemonArk';
 
   return (
-    <section className="relative overflow-hidden bg-[#070707]">
-      <div className="relative min-h-[820px] lg:min-h-[900px]">
-        <img src="/demonarkbackg.png" alt="DemonArk" className="absolute inset-0 h-full w-full object-cover object-center" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,4,5,.90)_0%,rgba(5,4,5,.62)_35%,rgba(5,4,5,.14)_68%,rgba(5,4,5,.30)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,4,5,.22)_0%,rgba(4,4,5,.06)_45%,#070707_100%)]" />
-        <div className="absolute left-0 top-0 h-full w-[55%] bg-[radial-gradient(circle_at_25%_46%,rgba(185,28,28,.18),transparent_52%)]" />
+    <section className="relative min-h-[150vh] overflow-hidden bg-[#080403]">
+      <div className="fixed inset-0 top-16 lg:top-20 -z-0 bg-[url('/demonarkbackg.png')] bg-cover bg-center bg-no-repeat" />
+      <div className="fixed inset-0 top-16 lg:top-20 -z-0 bg-[linear-gradient(180deg,rgba(7,3,2,.20),rgba(10,3,2,.46)_52%,rgba(8,3,2,.84))]" />
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 pb-20 pt-28 text-center sm:px-6 lg:px-8">
+        {store?.logo && <img src={store.logo} alt={title} className="h-32 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] sm:h-40 lg:h-48" />}
+        <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-white/75 drop-shadow-[0_2px_10px_#000] sm:text-base">VIP Coins. Demon VIP. Premium access to the DemonArk experience.</p>
+        <Link to="/products" className="group mt-7 inline-flex items-center gap-3 rounded-xl border border-red-300/30 bg-gradient-to-r from-red-600 via-red-500 to-red-700 px-9 py-4 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_45px_rgba(220,38,38,.45)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_18px_60px_rgba(239,68,68,.62)]"><ShoppingBag className="h-5 w-5" /> Shop DemonArk <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></Link>
+        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-[#160806]/65 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-red-100/70 backdrop-blur-md"><ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv</div>
+      </div>
 
-        <div className="relative z-10 mx-auto flex min-h-[820px] max-w-7xl items-center px-4 pb-36 pt-24 sm:px-6 lg:min-h-[900px] lg:px-8">
-          <div className="w-full max-w-[660px] text-left">
-            <div className="inline-flex items-center gap-2 rounded-md border-l-2 border-red-500 bg-black/45 px-4 py-2 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444]" />
-              <span className="text-[10px] sm:text-xs font-black uppercase tracking-[.25em] text-red-100">Official DemonArk Store</span>
-            </div>
-
-            <div className="mt-7 flex items-center gap-4">
-              {store?.logo ? <img src={store.logo} alt={title} className="h-20 sm:h-24 w-auto object-contain drop-shadow-[0_8px_25px_rgba(0,0,0,.9)]" /> : <Sparkles className="h-20 w-20 text-red-500" />}
-              <div className="h-14 w-px bg-red-500/40" />
-              <div><div className="text-xs font-bold uppercase tracking-[.25em] text-red-400">Premium Store</div><div className="mt-1 text-sm text-white/60">Built for the DemonArk community</div></div>
-            </div>
-
-            <h1 className="mt-7 text-[3.5rem] sm:text-[5rem] lg:text-[6.2rem] font-black uppercase leading-[.82] tracking-[-.06em] text-white drop-shadow-[0_5px_25px_rgba(0,0,0,.95)]">
-              YOUR ARK.<br/><span className="text-red-500">YOUR REIGN.</span>
-            </h1>
-            <p className="mt-7 max-w-xl text-base sm:text-lg leading-relaxed text-white/75 drop-shadow-[0_2px_10px_rgba(0,0,0,.9)]">Gear up with VIP Coins and Demon VIP. A focused premium store built to get you what you need and send you straight back into the fight.</p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link to="/products" className="group inline-flex items-center justify-center gap-3 rounded-lg bg-red-600 px-7 py-4 font-black uppercase tracking-wide text-white shadow-[0_12px_40px_rgba(220,38,38,.35)] transition hover:-translate-y-1 hover:bg-red-500 hover:shadow-[0_18px_50px_rgba(220,38,38,.5)]"><ShoppingBag className="h-5 w-5" /> Shop DemonArk <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" /></Link>
-              <div className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-black/45 px-5 py-4 text-sm text-white/70 backdrop-blur-md"><ShieldCheck className="h-4 w-4 text-red-400" /> Checkout powered by Tip4Serv</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute inset-x-0 bottom-0 z-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid overflow-hidden rounded-t-2xl border border-b-0 border-white/10 bg-[#0a0a0b]/95 shadow-[0_-20px_70px_rgba(0,0,0,.5)] backdrop-blur-xl md:grid-cols-3">
-              <StoreTile icon={<Zap className="h-6 w-6" />} title="VIP COINS" text="Premium currency packages" link />
-              <StoreTile icon={<Crown className="h-6 w-6" />} title="DEMON VIP" text="30 days of premium access" link />
-              <StoreTile icon={<ShieldCheck className="h-6 w-6" />} title="SECURE STORE" text="Fast Tip4Serv checkout" />
-            </div>
-          </div>
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-28 sm:px-6 lg:px-8">
+        <div className="grid gap-5 md:grid-cols-2">
+          <PortalCard image="/VIPCOINLOGO.png" title="VIP COINS" subtitle="Premium currency" />
+          <PortalCard image="/demonarkvipbanner.png" title="DEMON VIP" subtitle="30 day membership" />
         </div>
       </div>
     </section>
   );
 }
 
-function StoreTile({ icon, title, text, link = false }: { icon: React.ReactNode; title: string; text: string; link?: boolean }) {
-  const content = <><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-red-500/25 bg-red-500/10 text-red-400">{icon}</div><div><div className="text-base font-black tracking-wide text-white">{title}</div><div className="mt-1 text-xs text-slate-400">{text}</div></div>{link && <ArrowRight className="ml-auto h-5 w-5 text-red-500 transition group-hover:translate-x-1" />}</>;
-  const cls = "group flex min-h-[105px] items-center gap-4 border-b border-white/10 px-6 py-5 transition hover:bg-red-500/[.06] md:border-b-0 md:border-r last:border-r-0";
-  return link ? <Link to="/products" className={cls}>{content}</Link> : <div className={cls}>{content}</div>;
+function PortalCard({ image, title, subtitle }: { image: string; title: string; subtitle: string }) {
+  return <Link to="/products" className="group relative h-[300px] overflow-hidden rounded-2xl border border-red-500/25 bg-[#120604]/80 shadow-[0_20px_60px_rgba(0,0,0,.55)] transition duration-500 hover:-translate-y-2 hover:border-red-400/70 hover:shadow-[0_25px_75px_rgba(185,28,28,.35)] sm:h-[360px]"><img src={image} alt={title} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-[1.15]"/><div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"/><div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-6"><div><div className="text-2xl font-black text-white drop-shadow-lg">{title}</div><div className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-red-300">{subtitle}</div></div><div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-400/40 bg-red-600/80 text-white shadow-[0_0_25px_rgba(239,68,68,.35)] transition group-hover:scale-110 group-hover:bg-red-500"><ArrowRight className="h-5 w-5"/></div></div><div className="absolute inset-0 opacity-0 ring-1 ring-inset ring-red-400/70 transition group-hover:opacity-100"/></Link>;
 }
