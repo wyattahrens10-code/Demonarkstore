@@ -112,30 +112,102 @@ async function loadUserSubscriptions(token) {
   return Array.isArray(data) ? data : Array.isArray(data?.subscriptions) ? data.subscriptions : [];
 }
 
+async function loadUserPayments(token) {
+  const params = new URLSearchParams({ page: '1', max_page: '100' });
+  const response = await fetch(`${TIP4SERV_BASE}/user/payments?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+  });
+  if (!response.ok) return [];
+  const data = await response.json();
+  return Array.isArray(data) ? data : Array.isArray(data?.payments) ? data.payments : [];
+}
+
 function findDemonVip(subscriptions) {
   return subscriptions.find((subscription) => {
     const name = normalizedName(subscription?.name);
-    return name === DEMON_VIP_NAME && isActiveSubscription(subscription);
+    return name.includes(DEMON_VIP_NAME) && isActiveSubscription(subscription);
+  }) || null;
+}
+
+function isPaidStatus(value) {
+  return ['paid', 'active', 'processed', 'complete', 'completed', 'succeeded', 'success']
+    .includes(String(value || '').trim().toLowerCase());
+}
+
+function findTestDemonVipPayment(payments) {
+  const now = Date.now();
+
+  return payments.find((payment) => {
+    const transactionIdentifier = String(
+      payment?.identifier ?? payment?.transaction_id ?? payment?.transaction ?? '',
+    ).trim().toUpperCase();
+    if (!transactionIdentifier.startsWith('TEST_')) return false;
+    if (!isPaidStatus(payment?.status)) return false;
+
+    const cartText = normalizedName(
+      typeof payment?.cart === 'string'
+        ? payment.cart
+        : payment?.cart?.name ?? payment?.product_name ?? payment?.name ?? '',
+    );
+    if (!cartText.includes(DEMON_VIP_NAME)) return false;
+
+    const paidAt = unixToMs(payment?.date ?? payment?.created_at ?? payment?.start_date);
+    if (!paidAt) return false;
+
+    return paidAt + DEMON_VIP_DURATION_MS > now;
   }) || null;
 }
 
 async function getVerifiedVip(token) {
   const subscriptions = await loadUserSubscriptions(token);
-  return findDemonVip(subscriptions);
+  const liveVip = findDemonVip(subscriptions);
+  if (liveVip) {
+    return {
+      source: 'subscription',
+      vip: liveVip,
+      expiresAt: getMembershipExpiresAt(liveVip),
+      testMode: false,
+    };
+  }
+
+  // Test-only fallback. This can never promote a live payment because it requires
+  // Tip4Serv's explicit TEST_ transaction identifier.
+  const payments = await loadUserPayments(token);
+  const testPayment = findTestDemonVipPayment(payments);
+  if (!testPayment) return null;
+
+  const paidAt = unixToMs(testPayment?.date ?? testPayment?.created_at ?? testPayment?.start_date);
+  return {
+    source: 'test_payment',
+    vip: testPayment,
+    expiresAt: paidAt + DEMON_VIP_DURATION_MS,
+    testMode: true,
+  };
 }
 
 router.get('/vip-status', requireTip4ServUser, async (req, res) => {
   try {
-    const vip = await getVerifiedVip(req.tip4servToken);
-    const expiresAt = vip ? getMembershipExpiresAt(vip) : 0;
+    const entitlement = await getVerifiedVip(req.tip4servToken);
+    const vip = entitlement?.vip || null;
+    const expiresAt = entitlement?.expiresAt || 0;
 
     res.json({
-      active: Boolean(vip),
+      active: Boolean(entitlement),
       name: DEMON_VIP_NAME,
-      discount_percent: vip ? DEMON_VIP_DISCOUNT_PERCENT : 0,
-      membership_type: vip ? (vip.onetime ? 'one_time' : 'recurring') : null,
+      discount_percent: entitlement ? DEMON_VIP_DISCOUNT_PERCENT : 0,
+      mode: entitlement?.testMode ? 'test' : entitlement ? 'live' : null,
+      membership_type: entitlement
+        ? entitlement.testMode
+          ? 'test_one_time'
+          : vip?.onetime
+            ? 'one_time'
+            : 'recurring'
+        : null,
       active_until: expiresAt ? new Date(expiresAt).toISOString() : null,
-      subscription: vip ? {
+      subscription: entitlement && !entitlement.testMode ? {
         id: vip.id ?? null,
         status: vip.status ?? null,
         onetime: Boolean(vip.onetime),
@@ -143,6 +215,11 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
         next_payment: vip.next_payment ?? null,
         expire_date: vip.expire_date ?? null,
         unsubscribed: Boolean(vip.unsubscribed),
+      } : null,
+      test_payment: entitlement?.testMode ? {
+        id: vip.id ?? null,
+        status: vip.status ?? null,
+        date: vip.date ?? vip.created_at ?? null,
       } : null,
       verified_at: new Date().toISOString(),
     });
@@ -153,8 +230,8 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
 
 router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
   try {
-    const vip = await getVerifiedVip(req.tip4servToken);
-    if (!vip) return jsonError(res, 403, 'An active DEMON VIP membership is required for this discount.');
+    const entitlement = await getVerifiedVip(req.tip4servToken);
+    if (!entitlement) return jsonError(res, 403, 'An active DEMON VIP membership is required for this discount.');
 
     const productIds = Array.from(new Set(
       (Array.isArray(req.body?.product_ids) ? req.body.product_ids : [])
@@ -206,6 +283,7 @@ router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
 
     res.json({
       active: true,
+      mode: entitlement.testMode ? 'test' : 'live',
       discount_percent: DEMON_VIP_DISCOUNT_PERCENT,
       code: String(couponData.code),
       expires_at: new Date(expiration).toISOString(),
