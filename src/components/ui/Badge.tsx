@@ -5,7 +5,7 @@ interface BadgeProps {
 
 const variants = {
   discount: 'bg-red-500/90 text-white shadow-lg shadow-red-500/20',
-  subscription: 'bg-ark-600/90 text-white shadow-lg shadow-ark-600/20',
+  subscription: 'bg-red-600/90 text-white shadow-lg shadow-red-600/20',
   featured: 'bg-sand-500/90 text-volcanic-950 shadow-lg shadow-sand-500/20',
   stock: 'bg-volcanic-700/90 text-volcanic-200',
   new: 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/30',

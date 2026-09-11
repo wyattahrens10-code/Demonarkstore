@@ -105,13 +105,13 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           <Link to="/" className="flex items-center gap-3 group">
             {store?.logo ? (
-              <img src={store.logo} alt={storeName} className="w-10 h-10 rounded-lg object-cover shadow-lg group-hover:shadow-ark-500/20 transition-all duration-300 group-hover:scale-105" />
+              <img src={store.logo} alt={storeName} className="w-10 h-10 rounded-lg object-cover shadow-lg group-hover:shadow-red-500/20 transition-all duration-300 group-hover:scale-105" />
             ) : (
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-ark-500 to-ark-700 flex items-center justify-center shadow-lg group-hover:shadow-ark-500/30 transition-all duration-300 group-hover:scale-105">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg group-hover:shadow-red-500/30 transition-all duration-300 group-hover:scale-105">
                 <Gamepad2 className="w-5 h-5 text-white" />
               </div>
             )}
-            <span className="text-lg font-bold text-heading tracking-tight group-hover:text-ark-400 transition-colors duration-300">
+            <span className="text-lg font-bold text-heading tracking-tight group-hover:text-red-400 transition-colors duration-300">
               {storeName}
             </span>
           </Link>
@@ -144,8 +144,8 @@ export default function Header() {
                         to="/products"
                         className="flex items-center gap-3 px-4 py-3 rounded-xl text-volcanic-300 hover:text-heading hover:bg-volcanic-800/50 transition-all duration-200 group"
                       >
-                        <div className="w-9 h-9 rounded-lg bg-ark-600/15 border border-ark-600/20 flex items-center justify-center group-hover:bg-ark-600/25 group-hover:scale-110 transition-all duration-200">
-                          <LayoutGrid className="w-4 h-4 text-ark-500" />
+                        <div className="w-9 h-9 rounded-lg bg-red-600/15 border border-red-600/20 flex items-center justify-center group-hover:bg-red-600/25 group-hover:scale-110 transition-all duration-200">
+                          <LayoutGrid className="w-4 h-4 text-red-500" />
                         </div>
                         <div>
                           <span className="block text-sm font-semibold text-heading">{t('header.all_products')}</span>
@@ -167,12 +167,12 @@ export default function Header() {
                               className="flex items-center gap-3 px-4 py-3 rounded-xl text-volcanic-300 hover:text-heading hover:bg-volcanic-800/50 transition-all duration-200 group"
                             >
                               {cat.image ? (
-                                <div className="w-9 h-9 rounded-lg overflow-hidden border border-volcanic-700/30 group-hover:border-ark-600/30 transition-all duration-200 shrink-0 group-hover:scale-110">
+                                <div className="w-9 h-9 rounded-lg overflow-hidden border border-volcanic-700/30 group-hover:border-red-600/30 transition-all duration-200 shrink-0 group-hover:scale-110">
                                   <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
                                 </div>
                               ) : (
-                                <div className="w-9 h-9 rounded-lg bg-volcanic-800/60 border border-volcanic-700/30 flex items-center justify-center group-hover:bg-ark-600/15 group-hover:border-ark-600/20 transition-all duration-200 shrink-0 group-hover:scale-110">
-                                  <Icon className="w-4 h-4 text-volcanic-400 group-hover:text-ark-500 transition-colors" />
+                                <div className="w-9 h-9 rounded-lg bg-volcanic-800/60 border border-volcanic-700/30 flex items-center justify-center group-hover:bg-red-600/15 group-hover:border-red-600/20 transition-all duration-200 shrink-0 group-hover:scale-110">
+                                  <Icon className="w-4 h-4 text-volcanic-400 group-hover:text-red-500 transition-colors" />
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
@@ -300,7 +300,7 @@ export default function Header() {
                       }}
                       className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                         lang === l.code
-                          ? 'bg-ark-600/15 text-ark-400'
+                          ? 'bg-red-600/15 text-red-400'
                           : 'text-volcanic-300 hover:text-heading hover:bg-volcanic-800/60'
                       }`}
                     >
@@ -331,7 +331,7 @@ export default function Header() {
             >
               <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
               {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 bg-ark-600 text-white text-[10px] font-bold rounded-full shadow-lg shadow-ark-600/40 animate-scale-in">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 bg-red-600 text-white text-[10px] font-bold rounded-full shadow-lg shadow-red-600/40 animate-scale-in">
                   {itemCount > 99 ? '99+' : itemCount}
                 </span>
               )}
@@ -435,7 +435,7 @@ export default function Header() {
                       onClick={() => setLang(l.code)}
                       className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                         lang === l.code
-                          ? 'bg-ark-600/15 text-ark-400 border border-ark-600/30'
+                          ? 'bg-red-600/15 text-red-400 border border-red-600/30'
                           : 'text-volcanic-300 hover:text-heading hover:bg-volcanic-800/40 border border-volcanic-800/40'
                       }`}
                     >
@@ -509,7 +509,7 @@ function NavLink({ to, active, children }: { to: string; active: boolean; childr
     >
       {children}
       {active && (
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-ark-500 rounded-full" />
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-red-500 rounded-full" />
       )}
     </Link>
   );

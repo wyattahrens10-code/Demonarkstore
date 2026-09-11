@@ -9,7 +9,7 @@ interface Props {
 }
 
 const variants = {
-  info: 'bg-gradient-to-r from-ark-600/90 to-cyan-600/90',
+  info: 'bg-gradient-to-r from-red-600/90 to-cyan-600/90',
   success: 'bg-gradient-to-r from-emerald-600/90 to-green-600/90',
   warning: 'bg-gradient-to-r from-amber-600/90 to-orange-600/90',
 };

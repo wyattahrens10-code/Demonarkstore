@@ -353,24 +353,24 @@ export default function CheckoutPage() {
     return (
       <div className="pt-32 pb-16">
         <div className="max-w-lg mx-auto px-4 text-center">
-          <div className="w-20 h-20 rounded-full bg-ark-600/15 flex items-center justify-center mx-auto mb-6 animate-pulse">
-            <Lock className="w-10 h-10 text-ark-500" />
+          <div className="w-20 h-20 rounded-full bg-red-600/15 flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <Lock className="w-10 h-10 text-red-500" />
           </div>
           <h1 className="text-2xl font-bold text-heading mb-3">{t('checkout.redirecting.title')}</h1>
           <p className="text-volcanic-400 mb-6">
             {t('checkout.redirecting.body')}
           </p>
-          <div className="flex items-center justify-center gap-2 text-ark-500">
+          <div className="flex items-center justify-center gap-2 text-red-500">
             <Loader2 className="w-5 h-5 animate-spin" />
             <span className="text-sm font-medium">{t('checkout.redirecting.status')}</span>
           </div>
           <div className="mt-8 flex items-center justify-center gap-4 text-xs text-volcanic-500">
             <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-ark-600" />
+              <ShieldCheck className="w-4 h-4 text-red-600" />
               <span>{t('checkout.trust.secure_payment')}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-ark-600" />
+              <Zap className="w-4 h-4 text-red-600" />
               <span>{t('checkout.trust.instant_delivery')}</span>
             </div>
           </div>
@@ -392,7 +392,7 @@ export default function CheckoutPage() {
           </p>
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-ark-600 hover:bg-ark-500 text-white font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"
           >
             <ShoppingBag className="w-4 h-4" />
             {t('checkout.empty.cta')}
@@ -423,7 +423,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-3 space-y-8">
             <section>
               <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-ark-500" />
+                <ShoppingCart className="w-5 h-5 text-red-500" />
                 {t('checkout.section_cart')} ({items.length} {items.length > 1 ? t('cart.items_plural') : t('cart.items_singular')})
               </h2>
               <div className="space-y-3">
@@ -455,7 +455,7 @@ export default function CheckoutPage() {
                             <div className="min-w-0">
                               <Link
                                 to={`/product/${item.product.slug}`}
-                                className="text-heading font-semibold hover:text-ark-400 transition-colors line-clamp-1"
+                                className="text-heading font-semibold hover:text-red-400 transition-colors line-clamp-1"
                               >
                                 {item.product.name}
                               </Link>
@@ -468,7 +468,7 @@ export default function CheckoutPage() {
                                 {item.product.subscription && (
                                   <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                                     item.purchaseType === 'subscribe'
-                                      ? 'bg-ark-600/15 text-ark-400'
+                                      ? 'bg-red-600/15 text-red-400'
                                       : 'bg-volcanic-700/50 text-volcanic-300'
                                   }`}>
                                     {item.purchaseType === 'subscribe' ? t('checkout.badge.subscription') : t('checkout.badge.one_month')}
@@ -531,14 +531,14 @@ export default function CheckoutPage() {
 
             {loadingInit ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-5 h-5 text-ark-500 animate-spin mr-2" />
+                <Loader2 className="w-5 h-5 text-red-500 animate-spin mr-2" />
                 <span className="text-volcanic-400 text-sm">{t('checkout.loading_info')}</span>
               </div>
             ) : (
               requiredIdentifiers.length > 0 && (
                 <section id="delivery-info" className="scroll-mt-24">
                   <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-ark-500" />
+                    <AlertCircle className="w-5 h-5 text-red-500" />
                     {t('checkout.section_delivery_info')}
                   </h2>
                   <div className="glass-card p-6 space-y-5">
@@ -557,7 +557,7 @@ export default function CheckoutPage() {
                               {label}
                               <span className="text-red-400 ml-1">*</span>
                               {wasAutofilled && (
-                                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-ark-600/15 text-ark-400 border border-ark-600/30">
+                                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-600/15 text-red-400 border border-red-600/30">
                                   <ShieldCheck className="w-3 h-3" />
                                   Tip4Serv
                                 </span>
@@ -589,7 +589,7 @@ export default function CheckoutPage() {
                                 <button
                                   type="button"
                                   onClick={() => setDiscordHelpOpen(true)}
-                                  className="inline-flex items-center gap-1.5 text-xs font-medium text-ark-400 hover:text-ark-300 transition-colors"
+                                  className="inline-flex items-center gap-1.5 text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
                                 >
                                   <HelpCircle className="w-3.5 h-3.5" />
                                   {t('checkout.discord_help.button')}
@@ -695,7 +695,7 @@ export default function CheckoutPage() {
                     type="checkbox"
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 shrink-0 rounded border-volcanic-600 bg-volcanic-800 text-ark-600 focus:ring-ark-600/30 focus:ring-offset-0 cursor-pointer accent-ark-600"
+                    className="mt-0.5 w-4 h-4 shrink-0 rounded border-volcanic-600 bg-volcanic-800 text-red-600 focus:ring-red-600/30 focus:ring-offset-0 cursor-pointer accent-red-600"
                   />
                   <span className="text-xs text-volcanic-400 leading-relaxed group-hover:text-volcanic-300 transition-colors select-none">
                     {t('checkout.terms.text')}
@@ -723,11 +723,11 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center gap-2 text-xs text-volcanic-500">
-                    <ShieldCheck className="w-4 h-4 text-ark-600 shrink-0" />
+                    <ShieldCheck className="w-4 h-4 text-red-600 shrink-0" />
                     <span>{t('checkout.trust.secure_encrypted')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-volcanic-500">
-                    <Zap className="w-4 h-4 text-ark-600 shrink-0" />
+                    <Zap className="w-4 h-4 text-red-600 shrink-0" />
                     <span>{t('checkout.trust.auto_instant')}</span>
                   </div>
                 </div>
@@ -757,8 +757,8 @@ export default function CheckoutPage() {
               <XIcon className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-ark-600/15 flex items-center justify-center shrink-0">
-                <HelpCircle className="w-5 h-5 text-ark-500" />
+              <div className="w-10 h-10 rounded-xl bg-red-600/15 flex items-center justify-center shrink-0">
+                <HelpCircle className="w-5 h-5 text-red-500" />
               </div>
               <h3 className="text-lg font-bold text-heading">{t('checkout.discord_help.title')}</h3>
             </div>
@@ -786,7 +786,7 @@ export default function CheckoutPage() {
             <ol className="space-y-3 text-sm text-volcanic-300">
               {[1, 2, 3, 4].map((n) => (
                 <li key={n} className="flex gap-3">
-                  <span className="shrink-0 w-6 h-6 rounded-full bg-ark-600 text-white text-xs font-bold flex items-center justify-center">
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center">
                     {n}
                   </span>
                   <span className="leading-relaxed">{t(`checkout.discord_help.step${n}`)}</span>
@@ -800,7 +800,7 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => setDiscordHelpOpen(false)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ark-600 hover:bg-ark-500 text-white text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-semibold transition-colors"
               >
                 {t('checkout.discord_help.close')}
               </button>

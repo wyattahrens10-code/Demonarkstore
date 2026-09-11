@@ -23,10 +23,10 @@ const STYLE_MAP: Record<ToastType, { bg: string; border: string; icon: string; t
     text: 'text-red-800 dark:text-red-300',
   },
   info: {
-    bg: 'bg-ark-500/10 dark:bg-ark-500/15',
-    border: 'border-ark-500/25',
-    icon: 'text-ark-500',
-    text: 'text-ark-800 dark:text-ark-300',
+    bg: 'bg-red-500/10 dark:bg-red-500/15',
+    border: 'border-red-500/25',
+    icon: 'text-red-500',
+    text: 'text-red-800 dark:text-red-300',
   },
   warning: {
     bg: 'bg-sand-500/10 dark:bg-sand-500/15',

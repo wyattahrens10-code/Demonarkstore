@@ -20,13 +20,13 @@ export default function Footer() {
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-3 group">
               {store?.logo ? (
-                <img src={store.logo} alt={storeName} className="w-10 h-10 rounded-lg object-cover group-hover:shadow-lg group-hover:shadow-ark-500/20 transition-all duration-300" />
+                <img src={store.logo} alt={storeName} className="w-10 h-10 rounded-lg object-cover group-hover:shadow-lg group-hover:shadow-red-500/20 transition-all duration-300" />
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-ark-500 to-ark-700 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-ark-500/30 transition-all duration-300">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-red-500/30 transition-all duration-300">
                   <Gamepad2 className="w-5 h-5 text-white" />
                 </div>
               )}
-              <span className="text-lg font-bold text-heading group-hover:text-ark-400 transition-colors duration-300">{storeName}</span>
+              <span className="text-lg font-bold text-heading group-hover:text-red-400 transition-colors duration-300">{storeName}</span>
             </Link>
             <p className="text-sm text-volcanic-400 leading-relaxed max-w-xs">
               {storeDesc}
@@ -41,7 +41,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 text-sm text-volcanic-400 hover:text-ark-400 hover:translate-x-1 transition-all duration-200"
+                  className="inline-flex items-center gap-2 text-sm text-volcanic-400 hover:text-red-400 hover:translate-x-1 transition-all duration-200"
                 >
                   <Home className="w-3.5 h-3.5" />
                   {t('footer.home')}
@@ -50,7 +50,7 @@ export default function Footer() {
               <li>
                 <Link
                   to="/products"
-                  className="inline-flex items-center gap-2 text-sm text-volcanic-400 hover:text-ark-400 hover:translate-x-1 transition-all duration-200"
+                  className="inline-flex items-center gap-2 text-sm text-volcanic-400 hover:text-red-400 hover:translate-x-1 transition-all duration-200"
                 >
                   <Package className="w-3.5 h-3.5" />
                   {t('footer.shop')}
@@ -62,7 +62,7 @@ export default function Footer() {
                     href={item.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-volcanic-400 hover:text-ark-400 hover:translate-x-1 transition-all duration-200"
+                    className="inline-flex items-center gap-2 text-sm text-volcanic-400 hover:text-red-400 hover:translate-x-1 transition-all duration-200"
                   >
                     <Link2 className="w-3.5 h-3.5" />
                     {item.title}
@@ -84,7 +84,7 @@ export default function Footer() {
               href="https://tip4serv.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-ark-400 hover:text-ark-300 transition-colors duration-200"
+              className="inline-flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 transition-colors duration-200"
             >
               Tip4Serv
               <ExternalLink className="w-3 h-3" />

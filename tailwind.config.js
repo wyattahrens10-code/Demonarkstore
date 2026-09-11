@@ -6,17 +6,17 @@ export default {
     extend: {
       colors: {
         ark: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-          950: '#2e1065',
+          50: '#ffe5e5',
+          100: '#ffc0c0',
+          200: '#ff9999',
+          300: '#ff6666',
+          400: '#ff4444',
+          500: '#ef4444',
+          600: '#dc2626',
+          700: '#b91c1c',
+          800: '#991b1b',
+          900: '#7f1d1d',
+          950: '#4a0e0e',
         },
         sand: {
           50: '#faf8f1',
@@ -54,9 +54,9 @@ export default {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
       boxShadow: {
-        'glow-sm': '0 0 14px rgba(139, 92, 246, 0.22)',
-        'glow': '0 0 24px rgba(139, 92, 246, 0.28), 0 0 72px rgba(109, 40, 217, 0.10)',
-        'glow-lg': '0 0 36px rgba(139, 92, 246, 0.34), 0 0 96px rgba(109, 40, 217, 0.14)',
+        'glow-sm': '0 0 14px rgba(239, 68, 68, 0.22)',
+        'glow': '0 0 24px rgba(239, 68, 68, 0.28), 0 0 72px rgba(220, 38, 38, 0.10)',
+        'glow-lg': '0 0 36px rgba(239, 68, 68, 0.34), 0 0 96px rgba(220, 38, 38, 0.14)',
         'inner-glow': 'inset 0 1px 0 0 rgba(255,255,255,0.06)',
       },
       animation: {
@@ -118,8 +118,8 @@ export default {
           '50%': { opacity: '0.8' },
         },
         borderGlow: {
-          '0%, 100%': { borderColor: 'rgba(139, 92, 246, 0.16)' },
-          '50%': { borderColor: 'rgba(167, 139, 250, 0.44)' },
+          '0%, 100%': { borderColor: 'rgba(239, 68, 68, 0.16)' },
+          '50%': { borderColor: 'rgba(248, 113, 113, 0.44)' },
         },
         gradientX: {
           '0%, 100%': { backgroundPosition: '0% 50%' },
@@ -130,3 +130,4 @@ export default {
   },
   plugins: [],
 };
+

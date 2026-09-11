@@ -149,7 +149,7 @@ export default function ProductsPage() {
               : t('products.page.subtitle_all')}
           </p>
           {(activeSlug || search) && (
-            <p className="text-ark-400 font-medium mt-2">
+            <p className="text-red-400 font-medium mt-2">
               {filtered.length} {filtered.length !== 1 ? t('products.page.found_plural') : t('products.page.found_singular')}
             </p>
           )}
@@ -175,7 +175,7 @@ export default function ProductsPage() {
                     onClick={() => setCategory(null)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                       !activeSlug
-                        ? 'bg-ark-600 text-white shadow-lg shadow-ark-600/20'
+                        ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
                         : 'text-volcanic-300 hover:text-heading hover:bg-volcanic-800/60'
                     }`}
                   >
@@ -192,7 +192,7 @@ export default function ProductsPage() {
                         }
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                           activeSlug === cat.slug
-                            ? 'bg-ark-600 text-white shadow-lg shadow-ark-600/20'
+                            ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
                             : 'text-volcanic-300 hover:text-heading hover:bg-volcanic-800/60'
                         }`}
                       >
@@ -218,7 +218,7 @@ export default function ProductsPage() {
                     onChange={(e) => setSearch(e.target.value)}
                     className="input-field pl-11"
                   />
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-volcanic-500 group-focus-within:text-ark-500 transition-colors" />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-volcanic-500 group-focus-within:text-red-500 transition-colors" />
                 </div>
 
                 <div className="relative sm:w-56">
@@ -305,7 +305,7 @@ export default function ProductsPage() {
                               onClick={() => setCurrentPage(page)}
                               className={`w-10 h-10 rounded-lg font-medium transition-all duration-200 ${
                                 currentPage === page
-                                  ? 'bg-ark-600 text-white shadow-lg shadow-ark-600/20'
+                                  ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
                                   : 'bg-volcanic-800/60 text-volcanic-300 hover:bg-volcanic-800 hover:text-heading'
                               }`}
                             >

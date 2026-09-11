@@ -132,7 +132,7 @@ export default function ProductDetailPage() {
           </p>
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-ark-600 hover:bg-ark-500 text-white font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('product.back_to_shop')}
@@ -157,9 +157,9 @@ export default function ProductDetailPage() {
     <div className="pt-24 lg:pt-28 pb-16 animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {checkoutStatus === 'success' && (
-          <div className="mb-6 flex items-center gap-3 p-4 bg-ark-600/10 border border-ark-600/20 rounded-xl animate-fade-in">
-            <CheckCircle className="w-5 h-5 text-ark-500 shrink-0" />
-            <p className="text-ark-800 dark:text-ark-300 flex-1">
+          <div className="mb-6 flex items-center gap-3 p-4 bg-red-600/10 border border-red-600/20 rounded-xl animate-fade-in">
+            <CheckCircle className="w-5 h-5 text-red-500 shrink-0" />
+            <p className="text-red-800 dark:text-red-300 flex-1">
               {t('product.banner.checkout_success')}
             </p>
             <button onClick={dismissCheckoutStatus} className="text-volcanic-400 hover:text-heading transition-colors">
@@ -227,7 +227,7 @@ export default function ProductDetailPage() {
                     onClick={() => setSelectedImage(idx)}
                     className={`shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                       selectedImage === idx
-                        ? 'border-ark-500 shadow-lg shadow-ark-500/20 scale-105'
+                        ? 'border-red-500 shadow-lg shadow-red-500/20 scale-105'
                         : 'border-volcanic-800/50 opacity-60 hover:opacity-100 hover:border-volcanic-700'
                     }`}
                   >
@@ -298,7 +298,7 @@ export default function ProductDetailPage() {
 
             {(product.description || product.small_description) && (
               <div
-                className="prose dark:prose-invert max-w-none text-volcanic-300 leading-relaxed text-base [&_h1]:text-heading [&_h2]:text-heading [&_h3]:text-heading [&_h4]:text-heading [&_strong]:text-heading [&_a]:text-ark-400 [&_a:hover]:text-ark-300 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 [&_img]:rounded-lg [&_img]:my-4"
+                className="prose dark:prose-invert max-w-none text-volcanic-300 leading-relaxed text-base [&_h1]:text-heading [&_h2]:text-heading [&_h3]:text-heading [&_h4]:text-heading [&_strong]:text-heading [&_a]:text-red-400 [&_a:hover]:text-red-300 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 [&_img]:rounded-lg [&_img]:my-4"
                 dangerouslySetInnerHTML={{
                   __html: product.description || product.small_description || '',
                 }}
@@ -306,27 +306,27 @@ export default function ProductDetailPage() {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="glass-card p-4 flex items-center gap-3 group hover:border-ark-600/30 transition-all duration-200">
-                <div className="w-10 h-10 rounded-lg bg-ark-600/10 flex items-center justify-center group-hover:bg-ark-600/20 transition-all duration-200">
-                  <Zap className="w-5 h-5 text-ark-500" />
+              <div className="glass-card p-4 flex items-center gap-3 group hover:border-red-600/30 transition-all duration-200">
+                <div className="w-10 h-10 rounded-lg bg-red-600/10 flex items-center justify-center group-hover:bg-red-600/20 transition-all duration-200">
+                  <Zap className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-heading">{t('product.feature.instant')}</div>
                   <div className="text-xs text-volcanic-400">{t('product.feature.auto_delivery')}</div>
                 </div>
               </div>
-              <div className="glass-card p-4 flex items-center gap-3 group hover:border-ark-600/30 transition-all duration-200">
-                <div className="w-10 h-10 rounded-lg bg-ark-600/10 flex items-center justify-center group-hover:bg-ark-600/20 transition-all duration-200">
-                  <Shield className="w-5 h-5 text-ark-500" />
+              <div className="glass-card p-4 flex items-center gap-3 group hover:border-red-600/30 transition-all duration-200">
+                <div className="w-10 h-10 rounded-lg bg-red-600/10 flex items-center justify-center group-hover:bg-red-600/20 transition-all duration-200">
+                  <Shield className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-heading">{t('product.feature.secure')}</div>
                   <div className="text-xs text-volcanic-400">{t('product.feature.protected_payment')}</div>
                 </div>
               </div>
-              <div className="glass-card p-4 flex items-center gap-3 group hover:border-ark-600/30 transition-all duration-200">
-                <div className="w-10 h-10 rounded-lg bg-ark-600/10 flex items-center justify-center group-hover:bg-ark-600/20 transition-all duration-200">
-                  <Clock className="w-5 h-5 text-ark-500" />
+              <div className="glass-card p-4 flex items-center gap-3 group hover:border-red-600/30 transition-all duration-200">
+                <div className="w-10 h-10 rounded-lg bg-red-600/10 flex items-center justify-center group-hover:bg-red-600/20 transition-all duration-200">
+                  <Clock className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-heading">24/7</div>
@@ -379,7 +379,7 @@ export default function ProductDetailPage() {
             {product.custom_fields && product.custom_fields.length > 0 && (
               <div className="glass-card p-5">
                 <div className="flex items-center gap-2 mb-5">
-                  <Settings2 className="w-4 h-4 text-ark-500" />
+                  <Settings2 className="w-4 h-4 text-red-500" />
                   <h3 className="text-sm font-semibold text-heading uppercase tracking-wider">
                     {t('product.customize')}
                   </h3>
@@ -394,7 +394,7 @@ export default function ProductDetailPage() {
                 {extrasPrice > 0 && (
                   <div className="mt-4 pt-3 border-t border-volcanic-700/40 flex items-center justify-between">
                     <span className="text-xs text-volcanic-400">{t('common.options')}</span>
-                    <span className="text-sm font-semibold text-ark-400">
+                    <span className="text-sm font-semibold text-red-400">
                       +{formatMoney(extrasPrice, currency)}
                     </span>
                   </div>
@@ -420,7 +420,7 @@ export default function ProductDetailPage() {
                     }
                     addToast(t('product.toast.added_one_month', { name: product.name }), 'success');
                   }}
-                  className="w-full py-4 text-base rounded-xl font-semibold flex items-center justify-center gap-2 border-2 border-ark-600/40 text-heading bg-volcanic-800/40 hover:bg-volcanic-800/70 hover:border-ark-500/60 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-volcanic-800/40 disabled:hover:border-ark-600/40"
+                  className="w-full py-4 text-base rounded-xl font-semibold flex items-center justify-center gap-2 border-2 border-red-600/40 text-heading bg-volcanic-800/40 hover:bg-volcanic-800/70 hover:border-red-500/60 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-volcanic-800/40 disabled:hover:border-red-600/40"
                 >
                   <ShoppingBag className="w-5 h-5" />
                   {t('product.buy_one_month')} {formatMoney(product.price + extrasPrice, currency)}

@@ -135,7 +135,7 @@ export default function CrossSellSection({ cartItems, onClose }: Props) {
     <div className="border-t border-volcanic-800/50 bg-volcanic-950/40">
       <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-heading flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-ark-500" />
+          <Sparkles className="w-4 h-4 text-red-500" />
           {t('crosssell.title')}
         </h3>
         <div className="flex items-center gap-1">
@@ -203,14 +203,14 @@ export default function CrossSellSection({ cartItems, onClose }: Props) {
                   onClick={onClose}
                   className="block"
                 >
-                  <p className="text-xs font-semibold text-heading line-clamp-2 leading-tight group-hover:text-ark-400 transition-colors">
+                  <p className="text-xs font-semibold text-heading line-clamp-2 leading-tight group-hover:text-red-400 transition-colors">
                     {product.name}
                   </p>
                 </Link>
 
                 <div className="flex items-center justify-between gap-1">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold text-ark-400">
+                    <span className="text-sm font-bold text-red-400">
                       {formatMoney(product.price, currency)}
                     </span>
                     {product.old_price && (
@@ -223,7 +223,7 @@ export default function CrossSellSection({ cartItems, onClose }: Props) {
                   <button
                     onClick={() => handleQuickAdd(product)}
                     disabled={addingIds.has(product.id)}
-                    className="w-6 h-6 flex items-center justify-center rounded-md bg-ark-600/20 text-ark-500 hover:bg-ark-600 hover:text-white disabled:opacity-50 disabled:cursor-wait transition-all duration-200"
+                    className="w-6 h-6 flex items-center justify-center rounded-md bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white disabled:opacity-50 disabled:cursor-wait transition-all duration-200"
                     title={t('crosssell.add_tooltip')}
                   >
                     {addingIds.has(product.id) ? (

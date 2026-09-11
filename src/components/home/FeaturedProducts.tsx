@@ -15,7 +15,7 @@ export default function FeaturedProducts({ products }: Props) {
 
   return (
     <section className="py-20 lg:py-28 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-ark-950/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-950/5 to-transparent pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-12 lg:mb-16 gap-4">
           <div className="flex items-center gap-3">
@@ -33,7 +33,7 @@ export default function FeaturedProducts({ products }: Props) {
           </div>
           <Link
             to="/products"
-            className="group inline-flex items-center gap-2 px-4 py-2 text-ark-500 hover:text-ark-400 font-medium transition-all duration-200 rounded-lg hover:bg-ark-500/5 shrink-0"
+            className="group inline-flex items-center gap-2 px-4 py-2 text-red-500 hover:text-red-400 font-medium transition-all duration-200 rounded-lg hover:bg-red-500/5 shrink-0"
           >
             {t('home.featured.view_all')}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />

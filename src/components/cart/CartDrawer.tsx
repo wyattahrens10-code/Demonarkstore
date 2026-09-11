@@ -60,8 +60,8 @@ export default function CartDrawer() {
           <div className="h-full flex flex-col bg-volcanic-900/95 backdrop-blur-xl border-l border-volcanic-800/50 shadow-2xl shadow-black/40">
             <div className="flex items-center justify-between p-5 border-b border-volcanic-800/50">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-ark-600/15 flex items-center justify-center">
-                  <ShoppingCart className="w-4 h-4 text-ark-500" />
+                <div className="w-8 h-8 rounded-lg bg-red-600/15 flex items-center justify-center">
+                  <ShoppingCart className="w-4 h-4 text-red-500" />
                 </div>
                 <h2 className="text-lg font-bold text-heading">
                   {t('cart.title')}
@@ -149,7 +149,7 @@ export default function CartDrawer() {
                             <Link
                               to={`/product/${item.product.slug}`}
                               onClick={closeCart}
-                              className="text-sm font-semibold text-heading hover:text-ark-400 transition-colors duration-200 line-clamp-1"
+                              className="text-sm font-semibold text-heading hover:text-red-400 transition-colors duration-200 line-clamp-1"
                             >
                               {item.product.name}
                             </Link>
@@ -162,14 +162,14 @@ export default function CartDrawer() {
                               {item.product.subscription && (
                                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                                   item.purchaseType === 'subscribe'
-                                    ? 'bg-ark-600/15 text-ark-400'
+                                    ? 'bg-red-600/15 text-red-400'
                                     : 'bg-volcanic-700/50 text-volcanic-300'
                                 }`}>
                                   {item.purchaseType === 'subscribe' ? t('cart.badge.subscription_short') : t('cart.badge.one_month')}
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm font-bold text-ark-400 mt-1">
+                            <p className="text-sm font-bold text-red-400 mt-1">
                               {formatMoney(unitPrice, currency)}
                               {extras > 0 && (
                                 <span className="text-xs text-volcanic-500 font-normal ml-1">
@@ -225,7 +225,7 @@ export default function CartDrawer() {
                                   return next;
                                 })
                               }
-                              className="flex items-center gap-1.5 text-[11px] font-medium text-volcanic-400 hover:text-ark-400 transition-colors"
+                              className="flex items-center gap-1.5 text-[11px] font-medium text-volcanic-400 hover:text-red-400 transition-colors"
                             >
                               <Settings2 className="w-3 h-3" />
                               {expandedItems.has(item.id) ? t('cart.options.hide') : t('cart.options.edit')}
@@ -322,13 +322,13 @@ function DiscountProgressBar({ total, currency }: { total: number; currency?: st
           </span>
         ) : (
           <span className="flex items-center gap-1.5 text-volcanic-400">
-            <Gift className="w-3.5 h-3.5 text-ark-500" />
+            <Gift className="w-3.5 h-3.5 text-red-500" />
             {t('cart.discount.unlock')}
           </span>
         )}
         {nextTier && (
           <span className="text-volcanic-500">
-            {t('cart.discount.remaining_prefix')} <span className="text-ark-400 font-medium">{formatMoney(remaining, currency)}</span> {t('cart.discount.remaining_suffix')} -{nextTier.discount}%
+            {t('cart.discount.remaining_prefix')} <span className="text-red-400 font-medium">{formatMoney(remaining, currency)}</span> {t('cart.discount.remaining_suffix')} -{nextTier.discount}%
           </span>
         )}
         {!nextTier && (
