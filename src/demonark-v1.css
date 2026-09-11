@@ -51,6 +51,39 @@ header nav button {
   backdrop-filter: blur(16px);
 }
 
+.da-logo-pulse {
+  animation: da-logo-breathe 2.4s ease-in-out infinite;
+  transform-origin: center;
+  filter: drop-shadow(0 0 0 rgba(239,68,68,0));
+}
+
+.da-logo-pulse:hover {
+  animation-play-state: paused;
+}
+
+.da-action-pulse {
+  animation: da-action-breathe 2.2s ease-in-out infinite;
+}
+
+.da-action-pulse:hover {
+  animation-play-state: paused;
+}
+
+.da-discord-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.da-discord-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 28%, rgba(255,255,255,.08) 48%, transparent 68%);
+  transform: translateX(-140%);
+  animation: da-discord-sheen 3.8s ease-in-out infinite;
+}
+
 .da-portal {
   box-shadow: 0 24px 70px rgba(0,0,0,.48);
 }
@@ -73,6 +106,22 @@ header nav button {
   animation: da-slide-in .55s cubic-bezier(.16,1,.3,1) both;
 }
 
+@keyframes da-logo-breathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(239,68,68,0)); }
+  50% { transform: scale(1.045); filter: drop-shadow(0 0 18px rgba(239,68,68,.24)); }
+}
+
+@keyframes da-action-breathe {
+  0%, 100% { box-shadow: 0 12px 38px rgba(127,29,29,.22); }
+  50% { box-shadow: 0 16px 52px rgba(239,68,68,.34); }
+}
+
+@keyframes da-discord-sheen {
+  0%, 62% { transform: translateX(-140%); opacity: 0; }
+  72% { opacity: 1; }
+  100% { transform: translateX(140%); opacity: 0; }
+}
+
 @keyframes da-slide-in {
   from { opacity: 0; transform: translateY(16px) scale(.985); }
   to { opacity: 1; transform: none; }
@@ -87,5 +136,8 @@ header nav button {
 
 @media (prefers-reduced-motion: reduce) {
   .da-home-bg { transform: scale(1.015); }
-  .da-feature-slide { animation: none; }
+  .da-feature-slide,
+  .da-logo-pulse,
+  .da-action-pulse,
+  .da-discord-button::after { animation: none; }
 }
