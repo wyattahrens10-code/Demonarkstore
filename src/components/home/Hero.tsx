@@ -31,23 +31,37 @@ export default function Hero() {
 
   useEffect(() => {
     let raf = 0;
-    const updateBackground = () => {
-      raf = 0;
+    let current = 0;
+    let target = 0;
+    let running = true;
+
+    const updateTarget = () => {
       const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      const runway = Math.max(scrollable * 0.82, 1500);
-      const progress = Math.min(window.scrollY / runway, 1);
-      document.documentElement.style.setProperty('--da-bg-scale', (1.02 + progress * 0.22).toFixed(4));
-      document.documentElement.style.setProperty('--da-bg-shift', `${(-20 * progress).toFixed(1)}px`);
+      target = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
+      if (!raf) raf = window.requestAnimationFrame(animate);
     };
-    const onScroll = () => {
-      if (!raf) raf = window.requestAnimationFrame(updateBackground);
+
+    const animate = () => {
+      raf = 0;
+      if (!running) return;
+      current += (target - current) * 0.09;
+      if (Math.abs(target - current) < 0.0008) current = target;
+
+      const scale = 1.015 + current * 0.18;
+      const shift = -12 * current;
+      document.documentElement.style.setProperty('--da-bg-scale', scale.toFixed(4));
+      document.documentElement.style.setProperty('--da-bg-shift', `${shift.toFixed(2)}px`);
+
+      if (current !== target) raf = window.requestAnimationFrame(animate);
     };
-    updateBackground();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+
+    updateTarget();
+    window.addEventListener('scroll', updateTarget, { passive: true });
+    window.addEventListener('resize', updateTarget);
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      running = false;
+      window.removeEventListener('scroll', updateTarget);
+      window.removeEventListener('resize', updateTarget);
       if (raf) window.cancelAnimationFrame(raf);
       document.documentElement.style.removeProperty('--da-bg-scale');
       document.documentElement.style.removeProperty('--da-bg-shift');
@@ -101,31 +115,31 @@ export default function Hero() {
       <div className="da-home-bg" aria-hidden="true" />
       <div className="da-home-shade" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto flex min-h-[100vh] max-w-7xl flex-col items-center justify-center px-4 pb-24 pt-28 text-center sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-10 pt-24 text-center sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
         {store?.logo && (
           <img
             src={store.logo}
             alt={title}
-            className="h-32 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] sm:h-40 lg:h-48"
+            className="h-24 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] sm:h-28 lg:h-32"
           />
         )}
-        <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-white/75 drop-shadow-[0_2px_10px_#000] sm:text-base">
+        <p className="mt-3 max-w-md text-sm font-medium leading-relaxed text-white/75 drop-shadow-[0_2px_10px_#000] sm:text-base">
           VIP Coins. Demon VIP. Premium access to the DemonArk experience.
         </p>
         <Link
           to="/products"
-          className="group mt-7 inline-flex items-center gap-3 rounded-xl border border-red-300/30 bg-gradient-to-r from-red-700 via-red-600 to-red-800 px-9 py-4 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_45px_rgba(220,38,38,.40)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:from-red-600 hover:via-red-500 hover:to-red-700 hover:shadow-[0_18px_65px_rgba(239,68,68,.58)]"
+          className="group mt-5 inline-flex items-center gap-3 rounded-xl border border-red-300/30 bg-gradient-to-r from-red-700 via-red-600 to-red-800 px-8 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_45px_rgba(220,38,38,.40)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:from-red-600 hover:via-red-500 hover:to-red-700 hover:shadow-[0_18px_65px_rgba(239,68,68,.58)]"
         >
           <ShoppingBag className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" />
           Shop DemonArk
           <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
         </Link>
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/78 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300 backdrop-blur-md">
+        <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/78 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300 backdrop-blur-md">
           <ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-28 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
         <div className="grid gap-5 md:grid-cols-2">
           <PortalCard
             image="/vipcoinpile.png"
