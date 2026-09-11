@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../lib/store';
@@ -13,7 +12,7 @@ export default function Hero() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeFeature, setActiveFeature] = useState(0);
-  const discordUrl = store?.menu_links?.find((item) => `${item.title || ''} ${item.link || ''}`.toLowerCase().includes('discord'))?.link;
+  const discordUrl = 'https://discord.gg/CgVqbyGr4E';
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +94,6 @@ export default function Hero() {
   const currentFeature = featuredProducts[activeFeature];
   const nextFeature = () => { if (featuredProducts.length > 1) setActiveFeature((activeFeature + 1) % featuredProducts.length); };
   const previousFeature = () => { if (featuredProducts.length > 1) setActiveFeature((activeFeature - 1 + featuredProducts.length) % featuredProducts.length); };
-  const logoMaskStyle = store?.logo ? ({ '--da-logo-mask': `url("${store.logo}")` } as CSSProperties) : undefined;
 
   return (
     <section className="da-home">
@@ -104,8 +102,9 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
         {store?.logo && (
-          <Link to="/" className="da-logo-pulse group block" style={logoMaskStyle} aria-label="Back to DemonArk home">
-            <img src={store.logo} alt={title} className="h-32 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] transition-transform duration-150 ease-out group-hover:scale-[.90] sm:h-40 lg:h-48" />
+          <Link to="/" className="da-logo-pulse group block" aria-label="Back to DemonArk home">
+            <img src={store.logo} alt={title} className="da-logo-base h-32 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] transition-transform duration-150 ease-out group-hover:scale-[.90] sm:h-40 lg:h-48" />
+            <img src={store.logo} alt="" aria-hidden="true" className="da-logo-sheen-copy h-32 w-auto object-contain sm:h-40 lg:h-48" />
           </Link>
         )}
 
@@ -115,7 +114,7 @@ export default function Hero() {
           <Link to="/products" className="da-action-pulse group inline-flex items-center justify-center gap-3 rounded-xl border border-red-300/30 bg-gradient-to-r from-red-700 via-red-600 to-red-800 px-8 py-4 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_45px_rgba(220,38,38,.40)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:from-red-600 hover:via-red-500 hover:to-red-700 hover:shadow-[0_18px_65px_rgba(239,68,68,.58)]">
             <ShoppingBag className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" /> Shop DemonArk <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
           </Link>
-          <a href={discordUrl || '#'} onClick={(event) => { if (!discordUrl) event.preventDefault(); }} target={discordUrl ? '_blank' : undefined} rel={discordUrl ? 'noopener noreferrer' : undefined} className="da-action-pulse da-discord-button group inline-flex items-center justify-center gap-3 rounded-xl border border-white/12 bg-[#18181b]/90 px-8 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_35px_rgba(0,0,0,.35)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:border-red-400/45 hover:bg-[#202024]">
+          <a href={discordUrl} target="_blank" rel="noopener noreferrer" className="da-action-pulse da-discord-button group inline-flex items-center justify-center gap-3 rounded-xl border border-white/12 bg-[#18181b]/90 px-8 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_35px_rgba(0,0,0,.35)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:border-red-400/45 hover:bg-[#202024]">
             <img src="/Demonarkdiscordlgo.png" alt="" className="h-8 w-8 object-contain transition-transform duration-200 group-hover:rotate-[-5deg] group-hover:scale-110" /> Join Discord <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
           </a>
         </div>
