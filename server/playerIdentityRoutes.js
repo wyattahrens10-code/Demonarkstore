@@ -1,10 +1,12 @@
 import express from 'express';
-import { getPool } from './db.js';
+import { randomBytes } from 'node:crypto';
+import { getPool, getSetting } from './db.js';
 
 const router = express.Router();
 const TIP4SERV_BASE = 'https://api.tip4serv.com/v1';
 const DEMON_VIP_NAME = 'DEMON VIP';
 const DEMON_VIP_DISCOUNT_PERCENT = 20;
+const VIP_COUPON_TTL_MS = 15 * 60 * 1000;
 
 function jsonError(res, status, message) {
   return res.status(status).json({ error: message });
@@ -50,6 +52,11 @@ async function ensureProfile(user) {
   );
 }
 
+async function loadStoreApiKey() {
+  if (process.env.TIP4SERV_API_KEY) return process.env.TIP4SERV_API_KEY.trim();
+  return (await getSetting('tip4serv_api_key')).trim();
+}
+
 function normalizedName(value) {
   return String(value || '').trim().toUpperCase();
 }
@@ -91,10 +98,14 @@ function findDemonVip(subscriptions) {
   }) || null;
 }
 
+async function getVerifiedVip(token) {
+  const subscriptions = await loadUserSubscriptions(token);
+  return findDemonVip(subscriptions);
+}
+
 router.get('/vip-status', requireTip4ServUser, async (req, res) => {
   try {
-    const subscriptions = await loadUserSubscriptions(req.tip4servToken);
-    const vip = findDemonVip(subscriptions);
+    const vip = await getVerifiedVip(req.tip4servToken);
 
     res.json({
       active: Boolean(vip),
@@ -112,6 +123,71 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
     });
   } catch (err) {
     jsonError(res, 502, err instanceof Error ? err.message : 'Unable to verify Demon VIP subscription.');
+  }
+});
+
+router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
+  try {
+    const vip = await getVerifiedVip(req.tip4servToken);
+    if (!vip) return jsonError(res, 403, 'An active DEMON VIP subscription is required for this discount.');
+
+    const productIds = Array.from(new Set(
+      (Array.isArray(req.body?.product_ids) ? req.body.product_ids : [])
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value) && value > 0),
+    ));
+    if (!productIds.length) return jsonError(res, 400, 'At least one valid product is required.');
+
+    const apiKey = await loadStoreApiKey();
+    if (!apiKey) return jsonError(res, 500, 'Tip4Serv store API key is not configured.');
+
+    const code = `DAVIP-${randomBytes(8).toString('hex').toUpperCase()}`;
+    const expiration = Date.now() + VIP_COUPON_TTL_MS;
+    const couponResponse = await fetch(`${TIP4SERV_BASE}/store/discount/coupon`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code,
+        type: 'percentage',
+        value: DEMON_VIP_DISCOUNT_PERCENT,
+        limit: 1,
+        expiration,
+        accepted_products: productIds,
+      }),
+    });
+    const couponData = await couponResponse.json().catch(() => ({}));
+    if (!couponResponse.ok || !couponData?.code) {
+      const message = couponData?.error?.message || couponData?.message || couponData?.error || 'Unable to create VIP discount code.';
+      return jsonError(res, couponResponse.status >= 400 && couponResponse.status < 500 ? 400 : 502, String(message));
+    }
+
+    await getPool().execute(
+      `INSERT INTO vip_checkout_coupons
+        (tip4serv_user_id, tip4serv_coupon_id, code, discount_percent, product_ids, expires_at)
+       VALUES (:userId, :couponId, :code, :discountPercent, :productIds, FROM_UNIXTIME(:expiresSeconds))`,
+      {
+        userId: Number(req.tip4servUser.id),
+        couponId: couponData.id ? Number(couponData.id) : null,
+        code: String(couponData.code),
+        discountPercent: DEMON_VIP_DISCOUNT_PERCENT,
+        productIds: JSON.stringify(productIds),
+        expiresSeconds: Math.floor(expiration / 1000),
+      },
+    );
+
+    res.json({
+      active: true,
+      discount_percent: DEMON_VIP_DISCOUNT_PERCENT,
+      code: String(couponData.code),
+      expires_at: new Date(expiration).toISOString(),
+      product_ids: productIds,
+    });
+  } catch (err) {
+    jsonError(res, 502, err instanceof Error ? err.message : 'Unable to prepare Demon VIP discount.');
   }
 });
 
