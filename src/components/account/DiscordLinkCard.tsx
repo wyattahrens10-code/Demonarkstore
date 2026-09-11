@@ -3,6 +3,7 @@ import { Check, ExternalLink, Link2, Loader2, Unlink } from 'lucide-react';
 import { useToast } from '../../lib/toast';
 
 const STORAGE_KEY = 'demonark-discord-link';
+const CHECKOUT_PROFILE_KEY = 'demonark-checkout-profile';
 
 export interface DemonArkDiscordLink {
   id: string;
@@ -22,6 +23,16 @@ export function readDiscordLink(): DemonArkDiscordLink | null {
   }
 }
 
+function syncDiscordToCheckout(link: DemonArkDiscordLink | null) {
+  try {
+    const raw = window.localStorage.getItem(CHECKOUT_PROFILE_KEY);
+    const profile = raw ? JSON.parse(raw) : {};
+    if (link) profile.discordTag = link.globalName || link.username;
+    else delete profile.discordTag;
+    window.localStorage.setItem(CHECKOUT_PROFILE_KEY, JSON.stringify(profile));
+  } catch { /* ignore */ }
+}
+
 export default function DiscordLinkCard() {
   const { addToast } = useToast();
   const [linked, setLinked] = useState<DemonArkDiscordLink | null>(null);
@@ -29,11 +40,14 @@ export default function DiscordLinkCard() {
   const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID as string | undefined;
 
   useEffect(() => {
-    setLinked(readDiscordLink());
+    const existing = readDiscordLink();
+    setLinked(existing);
+    if (existing) syncDiscordToCheckout(existing);
   }, []);
 
   const saveLink = useCallback((link: DemonArkDiscordLink) => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(link));
+    syncDiscordToCheckout(link);
     setLinked(link);
     window.dispatchEvent(new CustomEvent('demonark-discord-link-changed', { detail: link }));
   }, []);
@@ -53,9 +67,7 @@ export default function DiscordLinkCard() {
     authUrl.searchParams.set('scope', 'identify');
     authUrl.searchParams.set('state', state);
 
-    try {
-      window.sessionStorage.setItem('discord_oauth_opener_origin', window.location.origin);
-    } catch { /* ignore */ }
+    try { window.sessionStorage.setItem('discord_oauth_opener_origin', window.location.origin); } catch { /* ignore */ }
 
     const width = 500;
     const height = 720;
@@ -69,6 +81,7 @@ export default function DiscordLinkCard() {
     }
 
     setConnecting(true);
+    let pollTimer = 0;
 
     const cleanup = () => {
       window.removeEventListener('message', onMessage);
@@ -82,12 +95,7 @@ export default function DiscordLinkCard() {
       if (!data || data.type !== 'discord-oauth') return;
 
       if (data.ok && data.id) {
-        const link: DemonArkDiscordLink = {
-          id: data.id,
-          username: data.username || data.id,
-          globalName: data.global_name || undefined,
-          linkedAt: Date.now(),
-        };
+        const link: DemonArkDiscordLink = { id: data.id, username: data.username || data.id, globalName: data.global_name || undefined, linkedAt: Date.now() };
         saveLink(link);
         addToast(`Discord linked as ${link.globalName || link.username}.`, 'success');
       } else {
@@ -97,13 +105,12 @@ export default function DiscordLinkCard() {
     };
 
     window.addEventListener('message', onMessage);
-    const pollTimer = window.setInterval(() => {
-      if (popup.closed) cleanup();
-    }, 500);
+    pollTimer = window.setInterval(() => { if (popup.closed) cleanup(); }, 500);
   }, [clientId, addToast, saveLink]);
 
   const disconnect = () => {
     window.localStorage.removeItem(STORAGE_KEY);
+    syncDiscordToCheckout(null);
     setLinked(null);
     window.dispatchEvent(new CustomEvent('demonark-discord-link-changed', { detail: null }));
     addToast('Discord account unlinked.', 'info');
@@ -113,13 +120,8 @@ export default function DiscordLinkCard() {
     <div className="rounded-2xl border border-white/10 bg-[#19191b] p-5 sm:p-6 shadow-[0_18px_50px_rgba(0,0,0,.24)]">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#5865F2]/15 border border-[#5865F2]/30">
-            <DiscordIcon className="h-6 w-6 text-[#7289da]" />
-          </div>
-          <div>
-            <div className="text-[11px] font-black uppercase tracking-[.18em] text-red-400">Connected account</div>
-            <h3 className="mt-1 text-lg font-black text-white">Discord</h3>
-          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#5865F2]/15 border border-[#5865F2]/30"><DiscordIcon className="h-6 w-6 text-[#7289da]" /></div>
+          <div><div className="text-[11px] font-black uppercase tracking-[.18em] text-red-400">Connected account</div><h3 className="mt-1 text-lg font-black text-white">Discord</h3></div>
         </div>
         {linked && <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[.12em] text-emerald-400"><Check className="h-3.5 w-3.5" /> Linked</span>}
       </div>
@@ -127,24 +129,13 @@ export default function DiscordLinkCard() {
       {linked ? (
         <div className="mt-5 rounded-xl border border-white/8 bg-[#222225] p-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-sm font-bold text-white truncate">{linked.globalName || linked.username}</div>
-              <div className="mt-1 text-xs text-zinc-500 truncate">@{linked.username}</div>
-              <div className="mt-1 text-[11px] text-zinc-600">Discord ID: {linked.id}</div>
-            </div>
+            <div className="min-w-0"><div className="text-sm font-bold text-white truncate">{linked.globalName || linked.username}</div><div className="mt-1 text-xs text-zinc-500 truncate">@{linked.username}</div><div className="mt-1 text-[11px] text-zinc-600">Discord ID: {linked.id}</div></div>
             <button onClick={disconnect} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs font-bold text-red-300 transition hover:bg-red-500/10"><Unlink className="h-4 w-4" /> Unlink</button>
           </div>
           <p className="mt-3 border-t border-white/8 pt-3 text-xs leading-relaxed text-zinc-500">Your Discord name will automatically fill in during DemonArk checkout on this device.</p>
         </div>
       ) : (
-        <div className="mt-5">
-          <p className="text-sm leading-relaxed text-zinc-400">Link Discord once and DemonArk can automatically fill your Discord information during checkout.</p>
-          <button onClick={connectDiscord} disabled={connecting} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 font-black text-white transition hover:bg-[#4752c4] disabled:opacity-60 sm:w-auto">
-            {connecting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Link2 className="h-5 w-5" />}
-            {connecting ? 'Connecting Discord…' : 'Link Discord account'}
-            {!connecting && <ExternalLink className="h-4 w-4 opacity-70" />}
-          </button>
-        </div>
+        <div className="mt-5"><p className="text-sm leading-relaxed text-zinc-400">Link Discord once and DemonArk can automatically fill your Discord information during checkout.</p><button onClick={connectDiscord} disabled={connecting} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 font-black text-white transition hover:bg-[#4752c4] disabled:opacity-60 sm:w-auto">{connecting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Link2 className="h-5 w-5" />}{connecting ? 'Connecting Discord…' : 'Link Discord account'}{!connecting && <ExternalLink className="h-4 w-4 opacity-70" />}</button></div>
       )}
     </div>
   );
