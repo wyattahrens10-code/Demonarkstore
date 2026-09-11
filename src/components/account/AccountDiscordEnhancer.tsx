@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import DiscordLinkCard from './DiscordLinkCard';
+import AccountPlayerIdentityCard from './AccountPlayerIdentityCard';
 
 export default function AccountDiscordEnhancer() {
   const location = useLocation();
@@ -10,9 +11,10 @@ export default function AccountDiscordEnhancer() {
       <div className="mb-4">
         <div className="text-[11px] font-black uppercase tracking-[.2em] text-red-400">DemonArk identity</div>
         <h2 className="mt-1 text-xl font-black text-white">Connected accounts</h2>
-        <p className="mt-1 text-sm text-zinc-500">Link services you use with DemonArk for faster checkout and future account automation.</p>
+        <p className="mt-1 text-sm text-zinc-500">Keep your ARK identity and linked services ready for faster checkout and future automatic delivery.</p>
       </div>
-      <div className="max-w-2xl">
+      <div className="max-w-2xl space-y-4">
+        <AccountPlayerIdentityCard />
         <DiscordLinkCard />
       </div>
     </section>
