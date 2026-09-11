@@ -12,7 +12,7 @@ import ToastContainer from './components/ui/ToastContainer';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
-import CheckoutPage from './pages/CheckoutPage';
+import DemonArkCheckoutPage from './pages/DemonArkCheckoutPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import CheckoutCanceledPage from './pages/CheckoutCanceledPage';
 import AccountPage from './pages/AccountPage';
@@ -35,7 +35,7 @@ export default function App() {
                       <Route path="/" element={<HomePage />} />
                       <Route path="/products" element={<ProductsPage />} />
                       <Route path="/product/:slug" element={<ProductDetailPage />} />
-                      <Route path="/checkout" element={<CheckoutPage />} />
+                      <Route path="/checkout" element={<DemonArkCheckoutPage />} />
                       <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
                       <Route path="/checkout/canceled" element={<CheckoutCanceledPage />} />
                       <Route path="/account" element={<AccountPage />} />
