@@ -12,6 +12,21 @@ CREATE TABLE IF NOT EXISTS app_settings (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS player_identity_profiles (
+  tip4serv_user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+  tip4serv_username VARCHAR(191) NULL,
+  email VARCHAR(191) NULL,
+  discord_id VARCHAR(64) NULL UNIQUE,
+  discord_username VARCHAR(191) NULL,
+  discord_global_name VARCHAR(191) NULL,
+  eos_id VARCHAR(191) NULL,
+  server_key VARCHAR(191) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX player_identity_profiles_eos_idx (eos_id),
+  INDEX player_identity_profiles_server_idx (server_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS wishlists (
   id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
   user_id VARCHAR(191) NOT NULL,
