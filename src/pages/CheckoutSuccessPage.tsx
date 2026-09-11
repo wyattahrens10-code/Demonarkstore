@@ -33,8 +33,8 @@ export default function CheckoutSuccessPage() {
 
         <div className="bg-volcanic-900/60 border border-volcanic-800/60 rounded-2xl p-6 sm:p-8 mb-8">
           <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-ark-600/15 border border-ark-600/30 flex items-center justify-center flex-shrink-0">
-              <Server className="w-6 h-6 text-ark-500" />
+            <div className="w-12 h-12 rounded-xl bg-red-600/15 border border-red-600/30 flex items-center justify-center flex-shrink-0">
+              <Server className="w-6 h-6 text-red-500" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-heading mb-1">
@@ -72,19 +72,19 @@ export default function CheckoutSuccessPage() {
           <h3 className="text-sm font-semibold text-heading mb-3">{t('checkout_success.howto.title')}</h3>
           <ol className="space-y-3">
             <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-ark-600/20 text-ark-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+              <span className="w-6 h-6 rounded-full bg-red-600/20 text-red-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
               <p className="text-sm text-volcanic-300">
                 {t('checkout_success.howto.step1')}
               </p>
             </li>
             <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-ark-600/20 text-ark-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+              <span className="w-6 h-6 rounded-full bg-red-600/20 text-red-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
               <p className="text-sm text-volcanic-300">
                 {t('checkout_success.howto.step2')}
               </p>
             </li>
             <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-ark-600/20 text-ark-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+              <span className="w-6 h-6 rounded-full bg-red-600/20 text-red-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
               <p className="text-sm text-volcanic-300">
                 {t('checkout_success.howto.step3')}
               </p>
@@ -95,7 +95,7 @@ export default function CheckoutSuccessPage() {
         <div className="text-center">
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-ark-600 hover:bg-ark-500 text-white font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"
           >
             <ShoppingBag className="w-4 h-4" />
             {t('checkout_success.back_to_shop')}

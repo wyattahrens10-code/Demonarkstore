@@ -41,7 +41,7 @@ export default function CheckoutCanceledPage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="flex items-center gap-3 bg-volcanic-800/40 rounded-xl p-4">
-              <RefreshCw className="w-5 h-5 text-ark-500 flex-shrink-0" />
+              <RefreshCw className="w-5 h-5 text-red-500 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-heading">{t('checkout_canceled.retry.title')}</p>
                 <p className="text-xs text-volcanic-400">
@@ -88,7 +88,7 @@ export default function CheckoutCanceledPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             to="/checkout"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-ark-600 hover:bg-ark-500 text-white font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"
           >
             <ShoppingCart className="w-4 h-4" />
             {t('checkout_canceled.return_to_cart')}

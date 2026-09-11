@@ -175,7 +175,7 @@ export default function AccountPage() {
     return (
       <div className="pt-32 pb-16">
         <div className="max-w-md mx-auto px-4 text-center">
-          <Loader2 className="w-8 h-8 text-ark-500 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 text-red-500 animate-spin mx-auto mb-4" />
           <p className="text-volcanic-400">{t('account.loading')}</p>
         </div>
       </div>
@@ -186,8 +186,8 @@ export default function AccountPage() {
     return (
       <div className="pt-32 pb-16 animate-fade-in">
         <div className="max-w-md mx-auto px-4 text-center">
-          <div className="w-20 h-20 rounded-full bg-ark-600/15 flex items-center justify-center mx-auto mb-6">
-            <UserIcon className="w-10 h-10 text-ark-500" />
+          <div className="w-20 h-20 rounded-full bg-red-600/15 flex items-center justify-center mx-auto mb-6">
+            <UserIcon className="w-10 h-10 text-red-500" />
           </div>
           <h1 className="text-2xl font-bold text-heading mb-3">{t('account.signin.title')}</h1>
           <p className="text-volcanic-400 mb-8">
@@ -267,7 +267,7 @@ export default function AccountPage() {
                 onClick={() => setTab(tt.key)}
                 className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
                   active
-                    ? 'bg-ark-600 text-white shadow-lg shadow-ark-600/20'
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
                     : 'bg-volcanic-800/40 text-volcanic-300 hover:text-heading hover:bg-volcanic-800/70 border border-volcanic-800/50'
                 }`}
               >
@@ -367,7 +367,7 @@ function ErrorState({ message }: { message: string }) {
 function LoadingPanel({ label }: { label: string }) {
   return (
     <div className="glass-card p-10 text-center">
-      <Loader2 className="w-7 h-7 text-ark-500 animate-spin mx-auto mb-3" />
+      <Loader2 className="w-7 h-7 text-red-500 animate-spin mx-auto mb-3" />
       <p className="text-volcanic-400 text-sm">{label}</p>
     </div>
   );
@@ -424,7 +424,7 @@ function PaymentsPanel({
       {header}
       <div className="space-y-3">
       {payments.map((p) => (
-        <article key={p.id} className="glass-card p-5 hover:border-ark-600/30 transition-colors">
+        <article key={p.id} className="glass-card p-5 hover:border-red-600/30 transition-colors">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1.5">

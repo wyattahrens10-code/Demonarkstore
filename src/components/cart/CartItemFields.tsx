@@ -156,7 +156,7 @@ function CompactSelect({
         <select
           value={value ?? ''}
           onChange={(e) => onUpdate(e.target.value)}
-          className="w-full appearance-none px-2.5 py-1.5 pr-7 bg-volcanic-800/80 border border-volcanic-700/50 rounded-lg text-volcanic-200 text-xs focus:outline-none focus:border-ark-600/50 transition-all cursor-pointer"
+          className="w-full appearance-none px-2.5 py-1.5 pr-7 bg-volcanic-800/80 border border-volcanic-700/50 rounded-lg text-volcanic-200 text-xs focus:outline-none focus:border-red-600/50 transition-all cursor-pointer"
         >
           {options.map((opt) => {
             const relPrice = (Number(opt.price) || 0) - minPrice;
@@ -199,7 +199,7 @@ function CompactNumber({
         <div className="absolute inset-0 flex items-center pointer-events-none">
           <div className="w-full h-1.5 rounded-full bg-volcanic-700/80">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-ark-600 to-ark-500 transition-all duration-150"
+              className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-150"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -211,7 +211,7 @@ function CompactNumber({
           step={step}
           value={numValue}
           onChange={(e) => onUpdate(Number(e.target.value))}
-          className="relative w-full h-4 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-ark-500/30 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-ark-500 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-ark-500 [&::-moz-range-track]:bg-transparent"
+          className="relative w-full h-4 appearance-none bg-transparent cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-red-500/30 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-red-500 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-red-500 [&::-moz-range-track]:bg-transparent"
         />
       </div>
       <div className="flex justify-between text-[10px] text-volcanic-600 mt-0.5">
@@ -244,14 +244,14 @@ function CompactCheckbox({
           onChange={(e) => onUpdate(e.target.checked ? 1 : 0)}
           className="sr-only peer"
         />
-        <div className="w-8 h-[18px] bg-volcanic-700 rounded-full peer-checked:bg-ark-600 transition-colors" />
+        <div className="w-8 h-[18px] bg-volcanic-700 rounded-full peer-checked:bg-red-600 transition-colors" />
         <div className="absolute top-[1px] left-[1px] w-4 h-4 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-[14px]" />
       </div>
       <span className="text-[11px] font-medium text-volcanic-400 group-hover:text-volcanic-300 transition-colors">
         {field.name}
       </span>
       {field.price !== undefined && Number(field.price) > 0 && (
-        <span className="text-[10px] text-ark-400 ml-auto">
+        <span className="text-[10px] text-red-400 ml-auto">
           +{formatMoney(Number(field.price), currency)}
         </span>
       )}
@@ -276,7 +276,7 @@ function CompactText({
         value={value ?? ''}
         onChange={(e) => onUpdate(e.target.value)}
         placeholder={field.placeholder || field.name}
-        className="w-full px-2.5 py-1.5 bg-volcanic-800/80 border border-volcanic-700/50 rounded-lg text-volcanic-200 text-xs placeholder-volcanic-600 focus:outline-none focus:border-ark-600/50 transition-all"
+        className="w-full px-2.5 py-1.5 bg-volcanic-800/80 border border-volcanic-700/50 rounded-lg text-volcanic-200 text-xs placeholder-volcanic-600 focus:outline-none focus:border-red-600/50 transition-all"
       />
     </div>
   );

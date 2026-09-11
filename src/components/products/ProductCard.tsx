@@ -39,13 +39,13 @@ export default function ProductCard({ product, index = 0 }: Props) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ark-950/70 via-volcanic-900 to-volcanic-950">
-            <Sparkles className="w-12 h-12 text-ark-700" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-950/70 via-volcanic-900 to-volcanic-950">
+            <Sparkles className="w-12 h-12 text-red-700" />
           </div>
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-volcanic-950 via-volcanic-950/20 to-transparent opacity-75 group-hover:opacity-60 transition-opacity duration-500" />
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-ark-500/50 to-transparent opacity-70" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-70" />
 
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-[3]">
           {isNew && <Badge variant="new">{t('product.badge.new')}</Badge>}
@@ -80,11 +80,11 @@ export default function ProductCard({ product, index = 0 }: Props) {
 
       <div className="relative p-4 lg:p-5 flex flex-col flex-1 z-[3]">
         <div className="flex items-start justify-between gap-3 mb-2.5">
-          <h3 className="text-base lg:text-lg font-bold text-heading tracking-tight group-hover:text-ark-300 transition-colors duration-300">
+          <h3 className="text-base lg:text-lg font-bold text-heading tracking-tight group-hover:text-red-300 transition-colors duration-300">
             {product.name}
           </h3>
-          <div className="w-8 h-8 rounded-full border border-ark-500/15 bg-ark-500/5 flex items-center justify-center shrink-0 opacity-70 group-hover:opacity-100 group-hover:border-ark-400/35 group-hover:bg-ark-500/10 transition-all duration-300">
-            <ChevronRight className="w-4 h-4 text-ark-400 transition-transform duration-300 group-hover:translate-x-0.5" />
+          <div className="w-8 h-8 rounded-full border border-red-500/15 bg-red-500/5 flex items-center justify-center shrink-0 opacity-70 group-hover:opacity-100 group-hover:border-red-400/35 group-hover:bg-red-500/10 transition-all duration-300">
+            <ChevronRight className="w-4 h-4 text-red-400 transition-transform duration-300 group-hover:translate-x-0.5" />
           </div>
         </div>
 
@@ -97,10 +97,10 @@ export default function ProductCard({ product, index = 0 }: Props) {
           <p className="text-sm text-volcanic-500 mb-4 flex-1">Premium DemonArk VIP bundle.</p>
         )}
 
-        <div className="mt-auto pt-3.5 border-t border-ark-500/10 space-y-2.5">
+        <div className="mt-auto pt-3.5 border-t border-red-500/10 space-y-2.5">
           <div className="flex items-end justify-between gap-3">
             <div className="flex items-baseline gap-2 min-w-0">
-              <span className="text-xl lg:text-2xl font-black text-heading group-hover:text-ark-300 transition-colors duration-300">
+              <span className="text-xl lg:text-2xl font-black text-heading group-hover:text-red-300 transition-colors duration-300">
                 {formatMoney(product.price, currency)}
               </span>
               {product.old_price && (
@@ -118,10 +118,10 @@ export default function ProductCard({ product, index = 0 }: Props) {
 
           <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.14em] text-volcanic-500 group-hover:text-volcanic-400 transition-colors duration-300">
             <span className="inline-flex items-center gap-1.5">
-              <Star className="w-3.5 h-3.5 text-ark-500" />
+              <Star className="w-3.5 h-3.5 text-red-500" />
               View bundle
             </span>
-            <span className="text-ark-500/80">DemonArk</span>
+            <span className="text-red-500/80">DemonArk</span>
           </div>
 
           {product.discount_end && (product.discount_end < 1e12 ? product.discount_end * 1000 : product.discount_end) > Date.now() && (

@@ -108,7 +108,7 @@ export default function DiscordOAuthCallbackPage() {
       <div className="glass-card max-w-md w-full p-8 text-center">
         {status === 'pending' && (
           <>
-            <Loader2 className="w-10 h-10 text-ark-500 animate-spin mx-auto mb-4" />
+            <Loader2 className="w-10 h-10 text-red-500 animate-spin mx-auto mb-4" />
             <h1 className="text-lg font-bold text-heading mb-2">Connexion à Discord...</h1>
             <p className="text-sm text-volcanic-400">Récupération de votre identifiant en cours.</p>
           </>

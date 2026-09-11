@@ -44,8 +44,8 @@ export default function Hero() {
         <div className="absolute inset-0 demon-grid opacity-60" />
       </div>
 
-      <div className="pointer-events-none absolute -top-24 right-[8%] w-[34rem] h-[34rem] rounded-full bg-ark-600/14 blur-[120px] animate-glow-pulse" />
-      <div className="pointer-events-none absolute bottom-[-8rem] left-[18%] w-[28rem] h-[28rem] rounded-full bg-purple-900/16 blur-[120px] animate-glow-pulse" style={{ animationDelay: '1.2s' }} />
+      <div className="pointer-events-none absolute -top-24 right-[8%] w-[34rem] h-[34rem] rounded-full bg-red-600/14 blur-[120px] animate-glow-pulse" />
+      <div className="pointer-events-none absolute bottom-[-8rem] left-[18%] w-[28rem] h-[28rem] rounded-full bg-red-900/16 blur-[120px] animate-glow-pulse" style={{ animationDelay: '1.2s' }} />
       <div className="pointer-events-none absolute top-[42%] right-[35%] w-56 h-56 rounded-full bg-red-900/10 blur-[90px]" />
 
       <div className="relative max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-32">
@@ -53,14 +53,14 @@ export default function Hero() {
           <div className="max-w-3xl space-y-7">
             <div className="demon-kicker animate-fade-in">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ark-400 opacity-70" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-ark-400" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-70" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-400" />
               </span>
               DemonArk Premium Store
             </div>
 
             <div className="space-y-4 animate-slide-up">
-              <p className="text-sm sm:text-base text-ark-300 font-semibold uppercase tracking-[0.24em]">
+              <p className="text-sm sm:text-base text-red-300 font-semibold uppercase tracking-[0.24em]">
                 Built for the grind
               </p>
               <h1 className="text-5xl sm:text-6xl lg:text-[5.25rem] font-black text-heading leading-[0.96] tracking-[-0.045em] text-balance">
@@ -88,7 +88,7 @@ export default function Hero() {
                 <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
               <div className="flex items-center gap-2 text-sm text-volcanic-400 px-1 sm:px-3">
-                <ShieldCheck className="w-4 h-4 text-ark-400" />
+                <ShieldCheck className="w-4 h-4 text-red-400" />
                 Secure checkout powered by Tip4Serv
               </div>
             </div>
@@ -104,18 +104,18 @@ export default function Hero() {
           </div>
 
           <div className="relative hidden md:block animate-fade-in-up" style={{ animationDelay: '0.12s', animationFillMode: 'both' }}>
-            <div className="absolute inset-10 rounded-full bg-ark-600/15 blur-[80px]" />
-            <div className="absolute -inset-6 rounded-[2rem] border border-ark-500/5 rotate-3" />
-            <div className="absolute -inset-3 rounded-[2rem] border border-ark-500/10 -rotate-2" />
+            <div className="absolute inset-10 rounded-full bg-red-600/15 blur-[80px]" />
+            <div className="absolute -inset-6 rounded-[2rem] border border-red-500/5 rotate-3" />
+            <div className="absolute -inset-3 rounded-[2rem] border border-red-500/10 -rotate-2" />
 
             <div className="demon-logo-shell relative overflow-hidden min-h-[380px] lg:min-h-[470px] flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-br from-ark-500/10 via-transparent to-red-950/10" />
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-ark-400/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-red-950/10" />
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-400/60 to-transparent" />
               {store?.logo ? (
                 <img
                   src={store.logo}
                   alt={title}
-                  className="relative z-10 w-[70%] max-w-[390px] aspect-square object-contain drop-shadow-[0_0_38px_rgba(139,92,246,0.30)] transition-transform duration-700 hover:scale-[1.03]"
+                  className="relative z-10 w-[70%] max-w-[390px] aspect-square object-contain drop-shadow-[0_0_38px_rgba(239,68,68,0.30)] transition-transform duration-700 hover:scale-[1.03]"
                 />
               ) : (
                 <div className="relative z-10 text-center px-8">
@@ -135,12 +135,13 @@ export default function Hero() {
 
 function StatBlock({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
   return (
-    <div className="group border-l border-ark-500/15 first:border-l-0 px-3 sm:px-5 first:pl-0">
-      <div className="flex items-center gap-2 text-ark-400 mb-1.5">
+    <div className="group border-l border-red-500/15 first:border-l-0 px-3 sm:px-5 first:pl-0">
+      <div className="flex items-center gap-2 text-red-400 mb-1.5">
         {icon}
-        <span className="text-xl sm:text-2xl font-extrabold text-heading group-hover:text-ark-300 transition-colors duration-300">{value}</span>
+        <span className="text-xl sm:text-2xl font-extrabold text-heading group-hover:text-red-300 transition-colors duration-300">{value}</span>
       </div>
       <div className="text-[10px] sm:text-xs text-volcanic-500 uppercase tracking-[0.14em]">{label}</div>
     </div>
   );
 }
+
