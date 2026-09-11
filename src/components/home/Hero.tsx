@@ -104,7 +104,6 @@ export default function Hero() {
         {store?.logo && (
           <Link to="/" className="da-logo-pulse group block" aria-label="Back to DemonArk home">
             <img src={store.logo} alt={title} className="da-logo-base h-32 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] transition-transform duration-150 ease-out group-hover:scale-[.90] sm:h-40 lg:h-48" />
-            <img src={store.logo} alt="" aria-hidden="true" className="da-logo-sheen-copy h-32 w-auto object-contain sm:h-40 lg:h-48" />
           </Link>
         )}
 
@@ -162,8 +161,7 @@ function PortalCard({ image, fallbackImage, title, subtitle, href }: { image: st
     <Link to={href} className="da-portal group relative h-[280px] overflow-hidden rounded-2xl border border-white/10 bg-[#131315]/85 transition duration-500 hover:-translate-y-2 hover:border-red-400/60 hover:shadow-[0_28px_80px_rgba(127,29,29,.34)] sm:h-[340px]">
       <img src={image} alt={title} onError={(event) => { if (fallbackImage && event.currentTarget.src !== fallbackImage) event.currentTarget.src = fallbackImage; }} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-[1.14]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-6"><div><div className="text-2xl font-black text-white drop-shadow-lg">{title}</div><div className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-red-300">{subtitle}</div></div><div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-400/40 bg-red-700/90 text-white shadow-[0_0_25px_rgba(239,68,68,.28)] transition duration-300 group-hover:scale-115 group-hover:bg-red-500 group-hover:shadow-[0_0_34px_rgba(239,68,68,.55)]"><ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" /></div></div>
-      <div className="absolute inset-0 opacity-0 ring-1 ring-inset ring-red-400/60 transition group-hover:opacity-100" />
+      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-6"><div><div className="text-2xl font-black text-white drop-shadow-lg">{title}</div><div className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-red-300">{subtitle}</div></div><div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-400/40 bg-red-700/90 text-white shadow-[0_0_25px_rgba(239,68,68,.28)] transition duration-300 group-hover:scale-115 group-hover:bg-red-500"><ArrowRight className="h-5 w-5" /></div></div>
     </Link>
   );
 }
