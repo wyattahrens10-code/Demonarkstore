@@ -161,7 +161,76 @@ function findTestDemonVipPayment(payments) {
   }) || null;
 }
 
-async function getVerifiedVip(token) {
+function safeSubscriptionDebug(subscription) {
+  if (!subscription || typeof subscription !== 'object') return subscription;
+  return {
+    keys: Object.keys(subscription).sort(),
+    id: subscription.id ?? null,
+    name: subscription.name ?? null,
+    status: subscription.status ?? null,
+    onetime: subscription.onetime ?? null,
+    start_date: subscription.start_date ?? null,
+    next_payment: subscription.next_payment ?? null,
+    expire_date: subscription.expire_date ?? null,
+    unsubscribed: subscription.unsubscribed ?? null,
+    duration_periodicity: subscription.duration_periodicity ?? null,
+    period_num: subscription.period_num ?? null,
+  };
+}
+
+function safePaymentDebug(payment) {
+  if (!payment || typeof payment !== 'object') return payment;
+  const cart = payment.cart;
+  return {
+    keys: Object.keys(payment).sort(),
+    id: payment.id ?? null,
+    status: payment.status ?? null,
+    date: payment.date ?? null,
+    created_at: payment.created_at ?? null,
+    sub_id: payment.sub_id ?? null,
+    identifier: payment.identifier ?? null,
+    transaction_id: payment.transaction_id ?? null,
+    transaction: payment.transaction ?? null,
+    mode: payment.mode ?? null,
+    type: payment.type ?? null,
+    product_name: payment.product_name ?? null,
+    name: payment.name ?? null,
+    cart_type: Array.isArray(cart) ? 'array' : typeof cart,
+    cart: typeof cart === 'string'
+      ? cart
+      : Array.isArray(cart)
+        ? cart.map((item) => ({
+            id: item?.id ?? item?.product_id ?? null,
+            name: item?.name ?? item?.product_name ?? null,
+            slug: item?.slug ?? null,
+            quantity: item?.quantity ?? null,
+          }))
+        : cart && typeof cart === 'object'
+          ? {
+              keys: Object.keys(cart).sort(),
+              id: cart.id ?? cart.product_id ?? null,
+              name: cart.name ?? cart.product_name ?? null,
+              slug: cart.slug ?? null,
+            }
+          : cart ?? null,
+  };
+}
+
+function logVipDiagnostics(userId, subscriptions, payments) {
+  try {
+    console.log('[DEMON_VIP_DIAGNOSTIC]', JSON.stringify({
+      tip4serv_user_id: Number(userId),
+      subscription_count: subscriptions.length,
+      subscriptions: subscriptions.slice(0, 10).map(safeSubscriptionDebug),
+      payment_count: payments.length,
+      payments: payments.slice(0, 10).map(safePaymentDebug),
+    }));
+  } catch (err) {
+    console.log('[DEMON_VIP_DIAGNOSTIC_ERROR]', err instanceof Error ? err.message : String(err));
+  }
+}
+
+async function getVerifiedVip(token, userId = null) {
   const subscriptions = await loadUserSubscriptions(token);
   const liveVip = findDemonVip(subscriptions);
   if (liveVip) {
@@ -176,6 +245,7 @@ async function getVerifiedVip(token) {
   // Test-only fallback. This can never promote a live payment because it requires
   // Tip4Serv's explicit TEST_ transaction identifier.
   const payments = await loadUserPayments(token);
+  if (userId !== null) logVipDiagnostics(userId, subscriptions, payments);
   const testPayment = findTestDemonVipPayment(payments);
   if (!testPayment) return null;
 
@@ -190,7 +260,7 @@ async function getVerifiedVip(token) {
 
 router.get('/vip-status', requireTip4ServUser, async (req, res) => {
   try {
-    const entitlement = await getVerifiedVip(req.tip4servToken);
+    const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser.id);
     const vip = entitlement?.vip || null;
     const expiresAt = entitlement?.expiresAt || 0;
 
@@ -230,7 +300,7 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
 
 router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
   try {
-    const entitlement = await getVerifiedVip(req.tip4servToken);
+    const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser.id);
     if (!entitlement) return jsonError(res, 403, 'An active DEMON VIP membership is required for this discount.');
 
     const productIds = Array.from(new Set(
