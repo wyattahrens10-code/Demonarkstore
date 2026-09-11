@@ -112,11 +112,21 @@ async function loadUserSubscriptions(token) {
   return Array.isArray(data) ? data : Array.isArray(data?.subscriptions) ? data.subscriptions : [];
 }
 
-async function loadUserPayments(token) {
-  const params = new URLSearchParams({ page: '1', max_page: '100' });
-  const response = await fetch(`${TIP4SERV_BASE}/user/payments?${params.toString()}`, {
+async function loadStorePaymentsForUser(user) {
+  const email = String(user?.email || '').trim();
+  if (!email) return [];
+
+  const apiKey = await loadStoreApiKey();
+  if (!apiKey) return [];
+
+  const params = new URLSearchParams({
+    page: '1',
+    max_page: '50',
+    identifier: email,
+  });
+  const response = await fetch(`${TIP4SERV_BASE}/store/payments?${params.toString()}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${apiKey}`,
       Accept: 'application/json',
     },
   });
@@ -141,10 +151,7 @@ function findTestDemonVipPayment(payments) {
   const now = Date.now();
 
   return payments.find((payment) => {
-    const transactionIdentifier = String(
-      payment?.identifier ?? payment?.transaction_id ?? payment?.transaction ?? '',
-    ).trim().toUpperCase();
-    if (!transactionIdentifier.startsWith('TEST_')) return false;
+    if (String(payment?.mode || '').trim().toLowerCase() !== 'test') return false;
     if (!isPaidStatus(payment?.status)) return false;
 
     const cartText = normalizedName(
@@ -161,76 +168,41 @@ function findTestDemonVipPayment(payments) {
   }) || null;
 }
 
-function safeSubscriptionDebug(subscription) {
-  if (!subscription || typeof subscription !== 'object') return subscription;
-  return {
-    keys: Object.keys(subscription).sort(),
-    id: subscription.id ?? null,
-    name: subscription.name ?? null,
-    status: subscription.status ?? null,
-    onetime: subscription.onetime ?? null,
-    start_date: subscription.start_date ?? null,
-    next_payment: subscription.next_payment ?? null,
-    expire_date: subscription.expire_date ?? null,
-    unsubscribed: subscription.unsubscribed ?? null,
-    duration_periodicity: subscription.duration_periodicity ?? null,
-    period_num: subscription.period_num ?? null,
-  };
+function logVipDiagnostic(user, subscriptions, storePayments) {
+  const safeSubscriptions = subscriptions.slice(0, 10).map((s) => ({
+    id: s?.id ?? null,
+    name: s?.name ?? null,
+    status: s?.status ?? null,
+    onetime: Boolean(s?.onetime),
+    start_date: s?.start_date ?? null,
+    expire_date: s?.expire_date ?? null,
+    next_payment: s?.next_payment ?? null,
+    unsubscribed: Boolean(s?.unsubscribed),
+  }));
+  const safePayments = storePayments.slice(0, 10).map((p) => ({
+    id: p?.id ?? null,
+    mode: p?.mode ?? null,
+    status: p?.status ?? null,
+    cart: p?.cart ?? null,
+    sub_id: p?.sub_id ?? null,
+    date: p?.date ?? null,
+    amount: p?.amount ?? null,
+    currency: p?.currency ?? null,
+    gateway: p?.gateway ?? null,
+    identifier: p?.identifier ?? null,
+    username: p?.username ?? null,
+  }));
+
+  console.log('[DEMON_VIP_DIAGNOSTIC]', JSON.stringify({
+    tip4serv_user_id: Number(user?.id || 0),
+    subscription_count: subscriptions.length,
+    subscriptions: safeSubscriptions,
+    store_payment_count: storePayments.length,
+    store_payments: safePayments,
+  }));
 }
 
-function safePaymentDebug(payment) {
-  if (!payment || typeof payment !== 'object') return payment;
-  const cart = payment.cart;
-  return {
-    keys: Object.keys(payment).sort(),
-    id: payment.id ?? null,
-    status: payment.status ?? null,
-    date: payment.date ?? null,
-    created_at: payment.created_at ?? null,
-    sub_id: payment.sub_id ?? null,
-    identifier: payment.identifier ?? null,
-    transaction_id: payment.transaction_id ?? null,
-    transaction: payment.transaction ?? null,
-    mode: payment.mode ?? null,
-    type: payment.type ?? null,
-    product_name: payment.product_name ?? null,
-    name: payment.name ?? null,
-    cart_type: Array.isArray(cart) ? 'array' : typeof cart,
-    cart: typeof cart === 'string'
-      ? cart
-      : Array.isArray(cart)
-        ? cart.map((item) => ({
-            id: item?.id ?? item?.product_id ?? null,
-            name: item?.name ?? item?.product_name ?? null,
-            slug: item?.slug ?? null,
-            quantity: item?.quantity ?? null,
-          }))
-        : cart && typeof cart === 'object'
-          ? {
-              keys: Object.keys(cart).sort(),
-              id: cart.id ?? cart.product_id ?? null,
-              name: cart.name ?? cart.product_name ?? null,
-              slug: cart.slug ?? null,
-            }
-          : cart ?? null,
-  };
-}
-
-function logVipDiagnostics(userId, subscriptions, payments) {
-  try {
-    console.log('[DEMON_VIP_DIAGNOSTIC]', JSON.stringify({
-      tip4serv_user_id: Number(userId),
-      subscription_count: subscriptions.length,
-      subscriptions: subscriptions.slice(0, 10).map(safeSubscriptionDebug),
-      payment_count: payments.length,
-      payments: payments.slice(0, 10).map(safePaymentDebug),
-    }));
-  } catch (err) {
-    console.log('[DEMON_VIP_DIAGNOSTIC_ERROR]', err instanceof Error ? err.message : String(err));
-  }
-}
-
-async function getVerifiedVip(token, userId = null) {
+async function getVerifiedVip(token, user) {
   const subscriptions = await loadUserSubscriptions(token);
   const liveVip = findDemonVip(subscriptions);
   if (liveVip) {
@@ -242,16 +214,18 @@ async function getVerifiedVip(token, userId = null) {
     };
   }
 
-  // Test-only fallback. This can never promote a live payment because it requires
-  // Tip4Serv's explicit TEST_ transaction identifier.
-  const payments = await loadUserPayments(token);
-  if (userId !== null) logVipDiagnostics(userId, subscriptions, payments);
-  const testPayment = findTestDemonVipPayment(payments);
+  // Test-only fallback: the customer account endpoints intentionally omit test
+  // purchases, so read the store payment feed using the private store API key.
+  // The query is filtered to the authenticated user's Tip4Serv email and only
+  // explicit mode="test" payments can satisfy this branch.
+  const storePayments = await loadStorePaymentsForUser(user);
+  logVipDiagnostic(user, subscriptions, storePayments);
+  const testPayment = findTestDemonVipPayment(storePayments);
   if (!testPayment) return null;
 
   const paidAt = unixToMs(testPayment?.date ?? testPayment?.created_at ?? testPayment?.start_date);
   return {
-    source: 'test_payment',
+    source: 'test_store_payment',
     vip: testPayment,
     expiresAt: paidAt + DEMON_VIP_DURATION_MS,
     testMode: true,
@@ -260,7 +234,7 @@ async function getVerifiedVip(token, userId = null) {
 
 router.get('/vip-status', requireTip4ServUser, async (req, res) => {
   try {
-    const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser.id);
+    const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser);
     const vip = entitlement?.vip || null;
     const expiresAt = entitlement?.expiresAt || 0;
 
@@ -289,6 +263,7 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
       test_payment: entitlement?.testMode ? {
         id: vip.id ?? null,
         status: vip.status ?? null,
+        mode: vip.mode ?? null,
         date: vip.date ?? vip.created_at ?? null,
       } : null,
       verified_at: new Date().toISOString(),
@@ -300,7 +275,7 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
 
 router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
   try {
-    const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser.id);
+    const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser);
     if (!entitlement) return jsonError(res, 403, 'An active DEMON VIP membership is required for this discount.');
 
     const productIds = Array.from(new Set(
