@@ -12,6 +12,7 @@ export default function Hero() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeFeature, setActiveFeature] = useState(0);
+  const discordUrl = store?.menu_links?.find((item) => `${item.title || ''} ${item.link || ''}`.toLowerCase().includes('discord'))?.link;
 
   useEffect(() => {
     let cancelled = false;
@@ -115,122 +116,97 @@ export default function Hero() {
       <div className="da-home-bg" aria-hidden="true" />
       <div className="da-home-shade" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-10 pt-24 text-center sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
+      <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
         {store?.logo && (
-          <img
-            src={store.logo}
-            alt={title}
-            className="h-24 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] sm:h-28 lg:h-32"
-          />
+          <Link to="/" className="da-logo-pulse group block" aria-label="Back to DemonArk home">
+            <img
+              src={store.logo}
+              alt={title}
+              className="h-32 w-auto object-contain drop-shadow-[0_10px_35px_rgba(0,0,0,.95)] transition-transform duration-150 ease-out group-hover:scale-[.90] sm:h-40 lg:h-48"
+            />
+          </Link>
         )}
-        <p className="mt-3 max-w-md text-sm font-medium leading-relaxed text-white/75 drop-shadow-[0_2px_10px_#000] sm:text-base">
+
+        <p className="mt-9 max-w-md text-sm font-medium leading-relaxed text-white/80 drop-shadow-[0_2px_10px_#000] sm:text-base">
           VIP Coins. Demon VIP. Premium access to the DemonArk experience.
         </p>
-        <Link
-          to="/products"
-          className="group mt-5 inline-flex items-center gap-3 rounded-xl border border-red-300/30 bg-gradient-to-r from-red-700 via-red-600 to-red-800 px-8 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_45px_rgba(220,38,38,.40)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:from-red-600 hover:via-red-500 hover:to-red-700 hover:shadow-[0_18px_65px_rgba(239,68,68,.58)]"
-        >
-          <ShoppingBag className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" />
-          Shop DemonArk
-          <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
-        </Link>
-        <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/78 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300 backdrop-blur-md">
+
+        <div className="mt-8 flex w-full max-w-sm flex-col items-stretch gap-4 sm:w-auto sm:min-w-[360px]">
+          <Link
+            to="/products"
+            className="da-action-pulse group inline-flex items-center justify-center gap-3 rounded-xl border border-red-300/30 bg-gradient-to-r from-red-700 via-red-600 to-red-800 px-8 py-4 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_45px_rgba(220,38,38,.40)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:from-red-600 hover:via-red-500 hover:to-red-700 hover:shadow-[0_18px_65px_rgba(239,68,68,.58)]"
+          >
+            <ShoppingBag className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" />
+            Shop DemonArk
+            <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
+          </Link>
+
+          <a
+            href={discordUrl || '#'}
+            onClick={(event) => { if (!discordUrl) event.preventDefault(); }}
+            target={discordUrl ? '_blank' : undefined}
+            rel={discordUrl ? 'noopener noreferrer' : undefined}
+            className="da-action-pulse da-discord-button group inline-flex items-center justify-center gap-3 rounded-xl border border-white/12 bg-[#18181b]/90 px-8 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_35px_rgba(0,0,0,.35)] transition duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:border-red-400/45 hover:bg-[#202024]"
+          >
+            <img src="/Demonarkdiscordlgo.png" alt="" className="h-8 w-8 object-contain transition-transform duration-200 group-hover:rotate-[-5deg] group-hover:scale-110" />
+            Join Discord
+            <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" />
+          </a>
+        </div>
+
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/78 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300 backdrop-blur-md">
           <ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="grid gap-5 md:grid-cols-2">
-          <PortalCard
-            image="/vipcoinpile.png"
-            fallbackImage="/VIPCOINLOGO.png"
-            title="VIP COINS"
-            subtitle="Premium currency"
-            href={categoryHref(['vip coin'])}
-          />
-          <PortalCard
-            image="/demonarkvipbanner.png"
-            title="DEMON VIP"
-            subtitle="30 day membership"
-            href={categoryHref(['demon vip'])}
-          />
-          <PortalCard
-            image="/misccatagorylogo.png"
-            title="MISC"
-            subtitle="Extras and special items"
-            href={categoryHref(['misc'])}
-          />
-          <PortalCard
-            image="/privateservercatagorylogo.png"
-            title="PRIVATE SERVERS"
-            subtitle="Your own DemonArk experience"
-            href={categoryHref(['private'])}
-          />
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-32 pt-8 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-2">
+          <PortalCard image="/vipcoinpile.png" fallbackImage="/VIPCOINLOGO.png" title="VIP COINS" subtitle="Premium currency" href={categoryHref(['vip coin'])} />
+          <PortalCard image="/demonarkvipbanner.png" title="DEMON VIP" subtitle="30 day membership" href={categoryHref(['demon vip'])} />
+          <PortalCard image="/misccatagorylogo.png" title="MISC" subtitle="Extras and special items" href={categoryHref(['misc'])} />
+          <PortalCard image="/privateservercatagorylogo.png" title="PRIVATE SERVERS" subtitle="Your own DemonArk experience" href={categoryHref(['private'])} />
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-28 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-end justify-between gap-4">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-end justify-between gap-4">
           <div>
             <div className="text-xs font-black uppercase tracking-[.24em] text-red-400">DemonArk picks</div>
             <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">Featured</h2>
           </div>
           {featuredProducts.length > 1 && (
             <div className="flex gap-2">
-              <button onClick={previousFeature} aria-label="Previous featured item" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-[#202023] hover:text-white">
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <button onClick={nextFeature} aria-label="Next featured item" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-[#202023] hover:text-white">
-                <ArrowRight className="h-5 w-5" />
-              </button>
+              <button onClick={previousFeature} aria-label="Previous featured item" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowLeft className="h-5 w-5" /></button>
+              <button onClick={nextFeature} aria-label="Next featured item" className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 transition hover:-translate-y-0.5 hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowRight className="h-5 w-5" /></button>
             </div>
           )}
         </div>
 
         {currentFeature ? (
-          <Link
-            key={currentFeature.id}
-            to={`/product/${currentFeature.slug}`}
-            className="da-feature-slide group da-panel grid min-h-[420px] overflow-hidden rounded-3xl lg:grid-cols-[1.18fr_.82fr]"
-          >
+          <Link key={currentFeature.id} to={`/product/${currentFeature.slug}`} className="da-feature-slide group da-panel grid min-h-[420px] overflow-hidden rounded-3xl lg:grid-cols-[1.18fr_.82fr]">
             <div className="relative min-h-[300px] overflow-hidden lg:min-h-[520px]">
-              {currentFeature.image ? (
-                <img src={currentFeature.image} alt={currentFeature.name} className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.06]" />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-zinc-900 to-black" />
-              )}
+              {currentFeature.image ? <img src={currentFeature.image} alt={currentFeature.name} className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.06]" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-zinc-900 to-black" />}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-[#111113]/80 lg:bg-gradient-to-r lg:from-transparent lg:via-black/5 lg:to-[#111113]" />
             </div>
             <div className="relative flex flex-col justify-center p-7 sm:p-10 lg:p-12">
               <div className="text-xs font-black uppercase tracking-[.22em] text-red-400">Featured DemonArk</div>
               <h3 className="mt-4 text-3xl font-black uppercase leading-tight text-white sm:text-4xl lg:text-5xl">{currentFeature.name}</h3>
               <div className="mt-5 text-3xl font-black text-white">{formatMoney(currentFeature.price, store?.currency)}</div>
-              <div className="mt-7 inline-flex w-fit items-center gap-3 rounded-xl bg-red-700 px-6 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_35px_rgba(185,28,28,.35)] transition group-hover:-translate-y-1 group-hover:bg-red-600 group-hover:shadow-[0_18px_45px_rgba(220,38,38,.5)]">
-                View item <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
+              <div className="mt-7 inline-flex w-fit items-center gap-3 rounded-xl bg-red-700 px-6 py-3.5 text-sm font-black uppercase tracking-[.08em] text-white shadow-[0_12px_35px_rgba(185,28,28,.35)] transition group-hover:-translate-y-1 group-hover:bg-red-600 group-hover:shadow-[0_18px_45px_rgba(220,38,38,.5)]">View item <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></div>
             </div>
           </Link>
         ) : (
-          <div className="da-panel flex min-h-[320px] items-center justify-center rounded-3xl px-6 text-center text-zinc-400">
-            Featured DemonArk items will appear here as soon as they are available.
-          </div>
+          <div className="da-panel flex min-h-[320px] items-center justify-center rounded-3xl px-6 text-center text-zinc-400">Featured DemonArk items will appear here as soon as they are available.</div>
         )}
 
         {featuredProducts.length > 1 && (
-          <div className="mt-5 flex justify-center gap-2">
-            {featuredProducts.map((product, index) => (
-              <button
-                key={product.id}
-                onClick={() => setActiveFeature(index)}
-                aria-label={`Show ${product.name}`}
-                className={`h-2.5 rounded-full transition-all ${index === activeFeature ? 'w-9 bg-red-500' : 'w-2.5 bg-white/25 hover:bg-white/45'}`}
-              />
-            ))}
+          <div className="mt-6 flex justify-center gap-2">
+            {featuredProducts.map((product, index) => <button key={product.id} onClick={() => setActiveFeature(index)} aria-label={`Show ${product.name}`} className={`h-2.5 rounded-full transition-all ${index === activeFeature ? 'w-9 bg-red-500' : 'w-2.5 bg-white/25 hover:bg-white/45'}`} />)}
           </div>
         )}
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-4 pb-32 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
         <div className="da-panel rounded-3xl border-red-500/20 p-7 sm:p-10 lg:p-12">
           <div className="text-center">
             <div className="text-xs font-black uppercase tracking-[.24em] text-red-400">DemonArk Store Policy</div>
@@ -254,27 +230,12 @@ export default function Hero() {
 
 function PortalCard({ image, fallbackImage, title, subtitle, href }: { image: string; fallbackImage?: string; title: string; subtitle: string; href: string }) {
   return (
-    <Link
-      to={href}
-      className="da-portal group relative h-[280px] overflow-hidden rounded-2xl border border-white/10 bg-[#131315]/85 transition duration-500 hover:-translate-y-2 hover:border-red-400/60 hover:shadow-[0_28px_80px_rgba(127,29,29,.34)] sm:h-[340px]"
-    >
-      <img
-        src={image}
-        alt={title}
-        onError={(event) => {
-          if (fallbackImage && event.currentTarget.src !== fallbackImage) event.currentTarget.src = fallbackImage;
-        }}
-        className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-[1.14]"
-      />
+    <Link to={href} className="da-portal group relative h-[280px] overflow-hidden rounded-2xl border border-white/10 bg-[#131315]/85 transition duration-500 hover:-translate-y-2 hover:border-red-400/60 hover:shadow-[0_28px_80px_rgba(127,29,29,.34)] sm:h-[340px]">
+      <img src={image} alt={title} onError={(event) => { if (fallbackImage && event.currentTarget.src !== fallbackImage) event.currentTarget.src = fallbackImage; }} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-[1.14]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-6">
-        <div>
-          <div className="text-2xl font-black text-white drop-shadow-lg">{title}</div>
-          <div className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-red-300">{subtitle}</div>
-        </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-400/40 bg-red-700/90 text-white shadow-[0_0_25px_rgba(239,68,68,.28)] transition duration-300 group-hover:scale-115 group-hover:bg-red-500 group-hover:shadow-[0_0_34px_rgba(239,68,68,.55)]">
-          <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-        </div>
+        <div><div className="text-2xl font-black text-white drop-shadow-lg">{title}</div><div className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-red-300">{subtitle}</div></div>
+        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-400/40 bg-red-700/90 text-white shadow-[0_0_25px_rgba(239,68,68,.28)] transition duration-300 group-hover:scale-115 group-hover:bg-red-500 group-hover:shadow-[0_0_34px_rgba(239,68,68,.55)]"><ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" /></div>
       </div>
       <div className="absolute inset-0 opacity-0 ring-1 ring-inset ring-red-400/60 transition group-hover:opacity-100" />
     </Link>
