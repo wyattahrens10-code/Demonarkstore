@@ -63,14 +63,14 @@ header nav button {
 .da-logo-pulse::after {
   content: '';
   position: absolute;
-  top: 10%;
-  bottom: 10%;
-  left: 31%;
-  width: 38%;
+  top: 18%;
+  bottom: 18%;
+  left: 36%;
+  width: 28%;
   pointer-events: none;
   border-radius: 50%;
   background: linear-gradient(112deg, transparent 31%, rgba(255,255,255,.03) 39%, rgba(255,255,255,.68) 49%, rgba(255,220,220,.13) 58%, transparent 68%);
-  transform: translateX(-92%) rotate(5deg);
+  transform: translateX(-58%) rotate(5deg);
   animation: da-logo-sheen 3.1s ease-in-out infinite;
   mix-blend-mode: screen;
   filter: blur(.3px);
@@ -140,10 +140,10 @@ header nav button {
 }
 
 @keyframes da-logo-sheen {
-  0%, 54% { transform: translateX(-92%) rotate(5deg); opacity: 0; }
+  0%, 54% { transform: translateX(-58%) rotate(5deg); opacity: 0; }
   61% { opacity: .9; }
-  80% { transform: translateX(92%) rotate(5deg); opacity: .9; }
-  88%, 100% { transform: translateX(92%) rotate(5deg); opacity: 0; }
+  80% { transform: translateX(58%) rotate(5deg); opacity: .9; }
+  88%, 100% { transform: translateX(58%) rotate(5deg); opacity: 0; }
 }
 
 @keyframes da-action-breathe {
