@@ -3,6 +3,8 @@ import { getPool } from './db.js';
 
 const router = express.Router();
 const TIP4SERV_BASE = 'https://api.tip4serv.com/v1';
+const DEMON_VIP_NAME = 'DEMON VIP';
+const DEMON_VIP_DISCOUNT_PERCENT = 20;
 
 function jsonError(res, status, message) {
   return res.status(status).json({ error: message });
@@ -25,6 +27,7 @@ async function requireTip4ServUser(req, res, next) {
     const user = data?.user ?? data;
     if (!user?.id) return jsonError(res, 401, 'Unable to identify Tip4Serv account.');
     req.tip4servUser = user;
+    req.tip4servToken = token;
     next();
   } catch {
     return jsonError(res, 502, 'Unable to verify Tip4Serv account right now.');
@@ -46,6 +49,71 @@ async function ensureProfile(user) {
     },
   );
 }
+
+function normalizedName(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+function unixToMs(value) {
+  const n = Number(value || 0);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return n > 1e12 ? n : n * 1000;
+}
+
+function isActiveSubscription(subscription) {
+  const status = String(subscription?.status || '').trim().toLowerCase();
+  const activeStatus = ['active', 'processed', 'complete', 'completed', 'succeeded', 'success'].includes(status);
+  if (!activeStatus) return false;
+
+  const expiresAt = unixToMs(subscription?.expire_date);
+  if (expiresAt && expiresAt <= Date.now()) return false;
+
+  return true;
+}
+
+async function loadUserSubscriptions(token) {
+  const params = new URLSearchParams({ page: '1', max_page: '100', only_recurring_subscription: 'false' });
+  const response = await fetch(`${TIP4SERV_BASE}/user/subscriptions?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+  });
+  if (!response.ok) throw new Error('Unable to verify Demon VIP subscription right now.');
+  const data = await response.json();
+  return Array.isArray(data) ? data : Array.isArray(data?.subscriptions) ? data.subscriptions : [];
+}
+
+function findDemonVip(subscriptions) {
+  return subscriptions.find((subscription) => {
+    const name = normalizedName(subscription?.name);
+    return name === DEMON_VIP_NAME && isActiveSubscription(subscription);
+  }) || null;
+}
+
+router.get('/vip-status', requireTip4ServUser, async (req, res) => {
+  try {
+    const subscriptions = await loadUserSubscriptions(req.tip4servToken);
+    const vip = findDemonVip(subscriptions);
+
+    res.json({
+      active: Boolean(vip),
+      name: DEMON_VIP_NAME,
+      discount_percent: vip ? DEMON_VIP_DISCOUNT_PERCENT : 0,
+      subscription: vip ? {
+        id: vip.id ?? null,
+        status: vip.status ?? null,
+        start_date: vip.start_date ?? null,
+        next_payment: vip.next_payment ?? null,
+        expire_date: vip.expire_date ?? null,
+        unsubscribed: Boolean(vip.unsubscribed),
+      } : null,
+      verified_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    jsonError(res, 502, err instanceof Error ? err.message : 'Unable to verify Demon VIP subscription.');
+  }
+});
 
 router.get('/identity', requireTip4ServUser, async (req, res) => {
   try {
