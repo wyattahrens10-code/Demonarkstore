@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../lib/store';
@@ -12,6 +12,8 @@ export default function Hero() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [backgroundStage, setBackgroundStage] = useState(0);
+  const backgroundTriggerRef = useRef<HTMLDivElement | null>(null);
   const discordUrl = 'https://discord.gg/CgVqbyGr4E';
   const lightweightMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
 
@@ -32,37 +34,28 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    const background = document.querySelector<HTMLElement>('.da-home-bg');
-    if (!background) return;
+    const trigger = backgroundTriggerRef.current;
+    if (!trigger) return;
 
-    const mobile = window.matchMedia('(max-width: 767px)').matches;
-    const baseScale = mobile ? 1.055 : 1.035;
-    const travel = mobile ? -120 : -82;
-    const stableViewportHeight = window.innerHeight;
-    const scrollRange = Math.max(document.documentElement.scrollHeight - stableViewportHeight, 1);
-    let raf = 0;
+    // Two completely static background compositions. We only switch opacity
+    // when the featured section crosses into view, so there is no per-frame
+    // scroll transform, zoom, RAF loop, or large texture movement on mobile.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setBackgroundStage(1);
+          return;
+        }
 
-    // Translation-only parallax. The texture stays at one constant scale so
-    // mobile WebKit never has to continually resample/zoom the full-screen image.
-    const render = () => {
-      raf = 0;
-      const progress = Math.min(Math.max(window.scrollY / scrollRange, 0), 1);
-      const shift = travel * progress;
-      background.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0) scale(${baseScale})`;
-    };
+        // When the section is below the viewport again, the user scrolled back
+        // toward the top, so return to the original composition.
+        if (entry.boundingClientRect.top > 0) setBackgroundStage(0);
+      },
+      { threshold: 0.12 },
+    );
 
-    const onScroll = () => {
-      if (!raf) raf = window.requestAnimationFrame(render);
-    };
-
-    render();
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (raf) window.cancelAnimationFrame(raf);
-      background.style.removeProperty('transform');
-    };
+    observer.observe(trigger);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -126,7 +119,34 @@ export default function Hero() {
   return (
     <section className="da-home">
       <div className="da-home-bg-frame" aria-hidden="true" style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -9, pointerEvents: 'none', contain: 'strict' }}>
-        <div className="da-home-bg" style={{ position: 'absolute', inset: lightweightMobile ? '-10%' : '-14%', width: 'auto', height: 'auto', zIndex: 0 }} />
+        <div
+          className="da-home-bg"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: 'auto',
+            height: 'auto',
+            zIndex: 0,
+            transform: 'none',
+            backgroundPosition: lightweightMobile ? '58% center' : 'center center',
+            opacity: backgroundStage === 0 ? 1 : 0,
+            transition: 'opacity 700ms ease',
+          }}
+        />
+        <div
+          className="da-home-bg"
+          style={{
+            position: 'absolute',
+            inset: lightweightMobile ? '-8%' : '-6%',
+            width: 'auto',
+            height: 'auto',
+            zIndex: 1,
+            transform: 'none',
+            backgroundPosition: lightweightMobile ? '64% 43%' : '60% 45%',
+            opacity: backgroundStage === 1 ? 1 : 0,
+            transition: 'opacity 700ms ease',
+          }}
+        />
       </div>
 
       {!lightweightMobile && <div className="da-fire-glow" aria-hidden="true" />}
@@ -161,7 +181,7 @@ export default function Hero() {
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/88 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300"><ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv</div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
+      <div ref={backgroundTriggerRef} className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.04fr_.96fr] lg:items-stretch">
           <div className="min-h-[420px] lg:min-h-[560px]">
             {currentFeature ? (
