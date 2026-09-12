@@ -2,14 +2,16 @@ import { useT } from '../../lib/i18n';
 
 export default function LoadingSpinner() {
   const t = useT();
+  const label = t('common.loading');
+
   return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4">
-      <div className="relative w-12 h-12">
+    <div role="status" aria-live="polite" aria-label={label} className="flex flex-col items-center justify-center py-20 gap-4">
+      <div className="relative w-12 h-12" aria-hidden="true">
         <div className="absolute inset-0 rounded-full border-2 border-volcanic-800" />
         <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-red-500 animate-spin" />
         <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-red-400/50 animate-spin-slow" />
       </div>
-      <p className="text-sm text-volcanic-500 animate-pulse">{t('common.loading')}</p>
+      <p className="text-sm text-volcanic-500 animate-pulse">{label}</p>
     </div>
   );
 }
