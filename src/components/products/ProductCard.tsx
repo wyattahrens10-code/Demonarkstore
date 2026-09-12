@@ -15,11 +15,12 @@ export default function ProductCard({ product, index = 0 }: Props) {
   const isNew = product.slug?.toLowerCase().includes('new') || product.name?.toLowerCase().includes('nouveau') || (product.id && product.id > 9000);
   const stockTracked = typeof product.stock === 'number';
   const outOfStock = stockTracked && (product.stock ?? 0) <= 0;
+  const prioritizeImage = index < 6;
 
   return (
-    <Link to={`/product/${product.slug}`} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#19191b] shadow-[0_16px_45px_rgba(0,0,0,.28)] transition duration-300 hover:-translate-y-1 hover:border-red-500/45 hover:shadow-[0_20px_55px_rgba(127,29,29,.25)] animate-fade-in-up" style={{ animationDelay: `${index * 55}ms`, animationFillMode: 'both' }}>
+    <Link to={`/product/${product.slug}`} aria-label={`View ${product.name}`} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#19191b] shadow-[0_16px_45px_rgba(0,0,0,.28)] transition duration-300 hover:-translate-y-1 hover:border-red-500/45 hover:shadow-[0_20px_55px_rgba(127,29,29,.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/70 animate-fade-in-up" style={{ animationDelay: `${index * 55}ms`, animationFillMode: 'both' }}>
       <div className="relative aspect-square overflow-hidden bg-[#111113]">
-        {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-950/70 via-[#19191b] to-[#111113]"><Sparkles className="w-10 h-10 text-red-700" /></div>}
+        {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" loading={prioritizeImage ? 'eager' : 'lazy'} fetchPriority={prioritizeImage ? 'high' : 'auto'} decoding="async" /> : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-950/70 via-[#19191b] to-[#111113]"><Sparkles className="w-10 h-10 text-red-700" /></div>}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
         <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-[3]">{isNew && <Badge variant="new">{t('product.badge.new')}</Badge>}{product.percent_off && product.percent_off > 0 ? <Badge variant="discount">-{product.percent_off}%</Badge> : null}{product.subscription && <Badge variant="subscription"><RefreshCw className="w-3 h-3 mr-1" />{t('product.badge.subscription_short')}</Badge>}{product.featured && <Badge variant="featured">{t('product.badge.star')}</Badge>}</div>
         {outOfStock && <div className="absolute inset-0 bg-black/65 z-[2]" />}
