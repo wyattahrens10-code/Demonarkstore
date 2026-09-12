@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../lib/store';
@@ -12,8 +12,6 @@ export default function Hero() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeFeature, setActiveFeature] = useState(0);
-  const [backgroundStage, setBackgroundStage] = useState(0);
-  const backgroundTriggerRef = useRef<HTMLDivElement | null>(null);
   const discordUrl = 'https://discord.gg/CgVqbyGr4E';
   const lightweightMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
 
@@ -31,31 +29,6 @@ export default function Hero() {
         setProducts([]);
       });
     return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    const trigger = backgroundTriggerRef.current;
-    if (!trigger) return;
-
-    // Two completely static background compositions. We only switch opacity
-    // when the featured section crosses into view, so there is no per-frame
-    // scroll transform, zoom, RAF loop, or large texture movement on mobile.
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setBackgroundStage(1);
-          return;
-        }
-
-        // When the section is below the viewport again, the user scrolled back
-        // toward the top, so return to the original composition.
-        if (entry.boundingClientRect.top > 0) setBackgroundStage(0);
-      },
-      { threshold: 0.12 },
-    );
-
-    observer.observe(trigger);
-    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -118,46 +91,19 @@ export default function Hero() {
 
   return (
     <section className="da-home">
-      <div className="da-home-bg-frame" aria-hidden="true" style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -9, pointerEvents: 'none', contain: 'strict' }}>
-        <div
-          className="da-home-bg"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: 'auto',
-            height: 'auto',
-            zIndex: 0,
-            transform: 'none',
-            backgroundPosition: lightweightMobile ? '58% center' : 'center center',
-            opacity: backgroundStage === 0 ? 1 : 0,
-            transition: 'opacity 700ms ease',
-          }}
-        />
-        <div
-          className="da-home-bg"
-          style={{
-            position: 'absolute',
-            inset: lightweightMobile ? '-8%' : '-6%',
-            width: 'auto',
-            height: 'auto',
-            zIndex: 1,
-            transform: 'none',
-            backgroundPosition: lightweightMobile ? '64% 43%' : '60% 45%',
-            opacity: backgroundStage === 1 ? 1 : 0,
-            transition: 'opacity 700ms ease',
-          }}
-        />
+      <div className="da-home-bg-frame" aria-hidden="true">
+        <div className="da-home-bg" />
       </div>
 
-      {!lightweightMobile && <div className="da-fire-glow" aria-hidden="true" />}
-      {!lightweightMobile && <div className="da-smoke da-smoke-a" aria-hidden="true" />}
-      {!lightweightMobile && <div className="da-smoke da-smoke-b" aria-hidden="true" />}
+      <div className="da-fire-glow" aria-hidden="true" />
+      <div className="da-smoke da-smoke-a" aria-hidden="true" />
+      <div className="da-smoke da-smoke-b" aria-hidden="true" />
       <div className="da-home-shade" aria-hidden="true" />
       <div className="da-embers da-embers-far" aria-hidden="true" />
       <div className="da-embers da-embers-mid" aria-hidden="true" />
       <div className="da-embers da-embers-near" aria-hidden="true" />
-      {!lightweightMobile && <div className="da-red-flare" aria-hidden="true" />}
-      {!lightweightMobile && <div className="da-heat-haze" aria-hidden="true" />}
+      <div className="da-red-flare" aria-hidden="true" />
+      <div className="da-heat-haze" aria-hidden="true" />
       <div className="da-pointer-glow" aria-hidden="true" />
 
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
@@ -181,7 +127,7 @@ export default function Hero() {
         <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/88 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300"><ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv</div>
       </div>
 
-      <div ref={backgroundTriggerRef} className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.04fr_.96fr] lg:items-stretch">
           <div className="min-h-[420px] lg:min-h-[560px]">
             {currentFeature ? (
