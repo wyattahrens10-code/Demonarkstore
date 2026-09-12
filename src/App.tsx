@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { Component, useEffect, type ErrorInfo, type ReactNode } from 'react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
-import { ArrowLeft, SearchX } from 'lucide-react';
+import { ArrowLeft, RefreshCw, SearchX, TriangleAlert } from 'lucide-react';
 import { CartProvider } from './lib/cart';
 import { StoreProvider } from './lib/store';
 import { Tip4ServAuthProvider } from './lib/tip4servAuth';
@@ -22,6 +22,42 @@ import AccountPage from './pages/AccountPage';
 import DiscordOAuthCallbackPage from './pages/DiscordOAuthCallbackPage';
 import AdminPage from './pages/AdminPage';
 
+class StorefrontErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[DemonArk storefront] render failure', error, info.componentStack);
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children;
+
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#09090b] px-4 text-center text-white">
+        <div className="w-full max-w-md rounded-3xl border border-red-500/20 bg-[#171719] p-8 shadow-[0_24px_80px_rgba(0,0,0,.55)] sm:p-10">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/25 bg-red-500/10">
+            <TriangleAlert className="h-7 w-7 text-red-400" />
+          </div>
+          <h1 className="mt-5 text-2xl font-black uppercase tracking-tight">DemonArk hit a snag</h1>
+          <p className="mt-3 text-sm leading-6 text-zinc-400">The store could not finish loading this screen. Your browser can safely retry it.</p>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            <button onClick={() => window.location.reload()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-700 px-4 py-3 text-sm font-black uppercase tracking-[.06em] text-white transition hover:bg-red-600">
+              <RefreshCw className="h-4 w-4" /> Reload
+            </button>
+            <a href="/" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#202023] px-4 py-3 text-sm font-black uppercase tracking-[.06em] text-zinc-100 transition hover:border-red-500/30">
+              <ArrowLeft className="h-4 w-4" /> Home
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -33,6 +69,10 @@ function ScrollToTop() {
 }
 
 function NotFoundPage() {
+  useEffect(() => {
+    document.title = 'Page not found | DemonArk';
+  }, []);
+
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4 pb-16 pt-28 text-center">
       <div className="max-w-md rounded-3xl border border-white/10 bg-[#171719] p-8 shadow-[0_24px_70px_rgba(0,0,0,.4)] sm:p-10">
@@ -52,41 +92,43 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <LanguageProvider>
-          <ToastProvider>
-            <StoreProvider>
-              <Tip4ServAuthProvider>
-                <CartProvider>
-                  <ScrollToTop />
-                  <div className="min-h-screen flex flex-col">
-                    <Header />
-                    <main className="flex-1">
-                      <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/products" element={<ProductsPage />} />
-                        <Route path="/product/:slug" element={<ProductDetailPage />} />
-                        <Route path="/checkout" element={<DemonArkCheckoutPage />} />
-                        <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
-                        <Route path="/checkout/canceled" element={<CheckoutCanceledPage />} />
-                        <Route path="/account" element={<AccountPage />} />
-                        <Route path="/auth/discord/callback" element={<DiscordOAuthCallbackPage />} />
-                        <Route path="/admin" element={<AdminPage />} />
-                        <Route path="*" element={<NotFoundPage />} />
-                      </Routes>
-                      <AccountDiscordEnhancer />
-                    </main>
-                    <Footer />
-                    <CartDrawer />
-                    <ToastContainer />
-                  </div>
-                </CartProvider>
-              </Tip4ServAuthProvider>
-            </StoreProvider>
-          </ToastProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <StorefrontErrorBoundary>
+      <BrowserRouter>
+        <ThemeProvider>
+          <LanguageProvider>
+            <ToastProvider>
+              <StoreProvider>
+                <Tip4ServAuthProvider>
+                  <CartProvider>
+                    <ScrollToTop />
+                    <div className="min-h-screen flex flex-col">
+                      <Header />
+                      <main className="flex-1">
+                        <Routes>
+                          <Route path="/" element={<HomePage />} />
+                          <Route path="/products" element={<ProductsPage />} />
+                          <Route path="/product/:slug" element={<ProductDetailPage />} />
+                          <Route path="/checkout" element={<DemonArkCheckoutPage />} />
+                          <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+                          <Route path="/checkout/canceled" element={<CheckoutCanceledPage />} />
+                          <Route path="/account" element={<AccountPage />} />
+                          <Route path="/auth/discord/callback" element={<DiscordOAuthCallbackPage />} />
+                          <Route path="/admin" element={<AdminPage />} />
+                          <Route path="*" element={<NotFoundPage />} />
+                        </Routes>
+                        <AccountDiscordEnhancer />
+                      </main>
+                      <Footer />
+                      <CartDrawer />
+                      <ToastContainer />
+                    </div>
+                  </CartProvider>
+                </Tip4ServAuthProvider>
+              </StoreProvider>
+            </ToastProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </StorefrontErrorBoundary>
   );
 }
