@@ -21,9 +21,7 @@ import { usePageTitle } from '../lib/usePageTitle';
 type VipStatus = {
   active: boolean;
   membership_type?: 'owner' | 'test_one_time' | 'one_time' | 'recurring' | null;
-  subscription?: {
-    unsubscribed?: boolean;
-  } | null;
+  subscription?: { unsubscribed?: boolean } | null;
 };
 
 export default function ProductDetailPage() {
@@ -46,184 +44,49 @@ export default function ProductDetailPage() {
   const currency = store?.currency;
   const checkoutStatus = searchParams.get('checkout');
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
-
   usePageTitle(product?.name || null);
 
   useEffect(() => {
-    async function load() {
-      if (!slug) return;
-      setLoading(true);
-      try {
-        setLoadError(null);
-        setProduct(await getProductBySlug(slug));
-      } catch (err) {
-        setLoadError(err instanceof Error ? err.message : String(err));
-        setProduct(null);
-      } finally {
-        setLoading(false);
-      }
-    }
+    async function load() { if (!slug) return; setLoading(true); try { setLoadError(null); setProduct(await getProductBySlug(slug)); } catch (err) { setLoadError(err instanceof Error ? err.message : String(err)); setProduct(null); } finally { setLoading(false); } }
     load();
   }, [slug]);
-
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [slug]);
   useEffect(() => { if (product?.custom_fields) setCustomFieldValues(getCustomFieldDefaults(product.custom_fields)); }, [product]);
-
   useEffect(() => {
     const isDemonVipProduct = Boolean(product?.subscription && String(product?.name || '').toUpperCase().includes('DEMON VIP'));
-    if (!token || !isDemonVipProduct) {
-      setVipStatus(null);
-      setVipStatusLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setVipStatusLoading(true);
-    fetch(`${apiBaseUrl}/api/account/vip-status`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('Unable to verify Demon VIP status.');
-        return res.json();
-      })
-      .then((data) => {
-        if (!cancelled) setVipStatus(data as VipStatus);
-      })
-      .catch(() => {
-        if (!cancelled) setVipStatus(null);
-      })
-      .finally(() => {
-        if (!cancelled) setVipStatusLoading(false);
-      });
-
+    if (!token || !isDemonVipProduct) { setVipStatus(null); setVipStatusLoading(false); return; }
+    let cancelled = false; setVipStatusLoading(true);
+    fetch(`${apiBaseUrl}/api/account/vip-status`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+      .then(async res => { if (!res.ok) throw new Error('Unable to verify Demon VIP status.'); return res.json(); })
+      .then(data => { if (!cancelled) setVipStatus(data as VipStatus); }).catch(() => { if (!cancelled) setVipStatus(null); }).finally(() => { if (!cancelled) setVipStatusLoading(false); });
     return () => { cancelled = true; };
   }, [token, product?.id, product?.name, product?.subscription, apiBaseUrl]);
-
   useEffect(() => {
-    if (!product) return;
-    const image = product.image || product.gallery?.[0] || '';
-    const description = (product.description || product.small_description || '').replace(/<[^>]*>/g, '').slice(0, 160);
-    const storeName = store?.title || 'DemonArk';
-    const title = `${product.name} | ${storeName}`;
-    const ogUrl = `${window.location.origin}/product/${product.slug}`;
-    const metaUpdates: Record<string, string> = {
-      'og:title': title, 'og:description': description, 'og:image': image, 'og:url': ogUrl, 'og:type': 'product',
-      'twitter:title': title, 'twitter:description': description, 'twitter:image': image, 'twitter:card': 'summary_large_image',
-    };
-    Object.entries(metaUpdates).forEach(([key, value]) => {
-      if (!value) return;
-      const attr = key.startsWith('og:') ? 'property' : 'name';
-      let tag = document.querySelector(`meta[${attr}="${key}"]`);
-      if (!tag) { tag = document.createElement('meta'); tag.setAttribute(attr, key); document.head.appendChild(tag); }
-      tag.setAttribute('content', value);
-    });
+    if (!product) return; const image = product.image || product.gallery?.[0] || ''; const description = (product.description || product.small_description || '').replace(/<[^>]*>/g, '').slice(0, 160); const storeName = store?.title || 'DemonArk'; const title = `${product.name} | ${storeName}`; const ogUrl = `${window.location.origin}/product/${product.slug}`;
+    const metaUpdates: Record<string, string> = { 'og:title': title, 'og:description': description, 'og:image': image, 'og:url': ogUrl, 'og:type': 'product', 'twitter:title': title, 'twitter:description': description, 'twitter:image': image, 'twitter:card': 'summary_large_image' };
+    Object.entries(metaUpdates).forEach(([key,value]) => { if (!value) return; const attr = key.startsWith('og:') ? 'property' : 'name'; let tag = document.querySelector(`meta[${attr}="${key}"]`); if (!tag) { tag = document.createElement('meta'); tag.setAttribute(attr,key); document.head.appendChild(tag); } tag.setAttribute('content',value); });
   }, [product, store]);
 
   const extrasPrice = useMemo(() => computeExtrasPrice(product?.custom_fields, customFieldValues), [product, customFieldValues]);
-  const stockTracked = typeof product?.stock === 'number';
-  const stockValue = product?.stock ?? 0;
-  const outOfStock = stockTracked && stockValue <= 0;
-  const lowStock = stockTracked && !outOfStock && stockValue <= 5;
-  const maxQuantity = stockTracked ? Math.max(1, stockValue) : Infinity;
+  const stockTracked = typeof product?.stock === 'number'; const stockValue = product?.stock ?? 0; const outOfStock = stockTracked && stockValue <= 0; const lowStock = stockTracked && !outOfStock && stockValue <= 5; const maxQuantity = stockTracked ? Math.max(1, stockValue) : Infinity;
   const isDemonVipProduct = Boolean(product?.subscription && String(product?.name || '').toUpperCase().includes('DEMON VIP'));
-  const alreadySubscribedToDemonVip = isDemonVipProduct && Boolean(
-    vipStatus?.active && (
-      vipStatus.membership_type === 'owner' ||
-      (vipStatus.membership_type === 'recurring' && !vipStatus.subscription?.unsubscribed)
-    )
-  );
-
-  useEffect(() => { if (stockTracked && quantity > maxQuantity) setQuantity(Math.max(1, maxQuantity)); }, [stockTracked, maxQuantity, quantity]);
-
+  const alreadySubscribedToDemonVip = isDemonVipProduct && Boolean(vipStatus?.active && (vipStatus.membership_type === 'owner' || (vipStatus.membership_type === 'recurring' && !vipStatus.subscription?.unsubscribed)));
+  useEffect(() => { if (stockTracked && quantity > maxQuantity) setQuantity(Math.max(1,maxQuantity)); }, [stockTracked,maxQuantity,quantity]);
   if (loading) return <div className="pt-32"><LoadingSpinner /></div>;
-
-  if (!product) {
-    return <div className="pt-32 text-center"><div className="max-w-md mx-auto px-4">{loadError && <ApiErrorNotice title="Product loading error" message={loadError} />}<h2 className="text-2xl font-bold text-heading mb-4">{t('product.not_found.title')}</h2><p className="text-zinc-400 mb-8">{t('product.not_found.description')}</p><Link to="/products" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"><ArrowLeft className="w-4 h-4" />{t('product.back_to_shop')}</Link></div></div>;
-  }
-
-  const images = product.gallery?.length ? product.gallery : product.image ? [product.image] : [];
-  const periodLabel = product.duration_periodicity ? translatePeriodicity(product.duration_periodicity, 'en') : 'month';
-  const totalPrice = product.price + extrasPrice;
-
-  function dismissCheckoutStatus() { searchParams.delete('checkout'); setSearchParams(searchParams); }
-
-  const handleAddToCart = (type: 'addtocart' | 'subscribe', qty: number = 1) => {
-    if (outOfStock) return;
-    if (type === 'subscribe' && alreadySubscribedToDemonVip) {
-      addToast('You already have an active DEMON VIP subscription.', 'warning');
-      return;
-    }
-    const result = addItem(product, customFieldValues, product.server_options?.[0]?.id, type, qty);
-    if (!result.ok) { addToast(t('cart.toast.subscription_conflict'), 'error'); return; }
-    addToast(type === 'subscribe' ? t('product.toast.added_subscription', { name: product.name }) : t('product.toast.added_qty', { name: product.name, qty }), 'success');
-    setAddedState(true);
-    window.setTimeout(() => setAddedState(false), 1600);
-    if (qty > 0) setQuantity(1);
-  };
-
-  return (
-    <div className="pt-24 lg:pt-28 pb-20 animate-fade-in relative">
-      <div className="fixed inset-0 pointer-events-none -z-10"><div className="absolute top-1/4 right-0 w-[650px] h-[650px] bg-red-600/8 rounded-full blur-3xl" /></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {checkoutStatus === 'success' && <div className="mb-6 flex items-center gap-3 p-4 bg-red-600/10 border border-red-600/20 rounded-xl"><CheckCircle className="w-5 h-5 text-red-500 shrink-0" /><p className="text-red-300 flex-1">{t('product.banner.checkout_success')}</p><button onClick={dismissCheckoutStatus} className="text-zinc-400 hover:text-white"><XCircle className="w-4 h-4" /></button></div>}
-        {checkoutStatus === 'canceled' && <div className="mb-6 flex items-center gap-3 p-4 bg-zinc-800 border border-zinc-700 rounded-xl"><XCircle className="w-5 h-5 text-zinc-300 shrink-0" /><p className="text-zinc-300 flex-1">{t('product.banner.checkout_canceled')}</p><button onClick={dismissCheckoutStatus} className="text-zinc-400 hover:text-white"><XCircle className="w-4 h-4" /></button></div>}
-
-        <div className="flex items-center gap-2 text-sm text-zinc-500 mb-5 lg:mb-8 overflow-hidden">
-          <Link to="/products" className="inline-flex items-center gap-2 hover:text-white transition-colors shrink-0"><ArrowLeft className="w-4 h-4" /> Shop</Link>
-          {product.category?.name && <><span>/</span><Link to={`/products?category=${product.category.slug}`} className="hover:text-white transition-colors shrink-0">{product.category.name}</Link></>}
-          <span>/</span><span className="truncate">{product.name}</span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-14 items-start">
-          <div className="space-y-3 lg:sticky lg:top-28">
-            <div className="relative aspect-square overflow-hidden rounded-3xl border border-red-500/20 bg-[#18181b] shadow-[0_26px_80px_rgba(0,0,0,.42),0_0_38px_rgba(127,29,29,.12)] group">
-              {images.length > 0 ? <img src={images[selectedImage]} alt={product.name} className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.035]" /> : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-950/50 via-[#18181b] to-[#111113]"><Star className="w-20 h-20 text-zinc-700" /></div>}
-              <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/5 rounded-3xl" />
-            </div>
-            {images.length > 1 && <div className="flex gap-2 overflow-x-auto py-1">{images.map((img, idx) => <button key={idx} onClick={() => setSelectedImage(idx)} className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition ${selectedImage === idx ? 'border-red-500' : 'border-white/10 opacity-60'}`}><img src={img} alt="" className="w-full h-full object-cover" /></button>)}</div>}
-          </div>
-
-          <div className="space-y-5">
-            <div className="flex flex-wrap gap-2">
-              {product.category?.name && <span className="inline-flex items-center rounded-full border border-red-500/25 bg-red-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.16em] text-red-300">{product.category.name}</span>}
-              {product.percent_off && product.percent_off > 0 ? <Badge variant="discount">-{product.percent_off}%</Badge> : null}
-              {product.subscription && <Badge variant="subscription"><RefreshCw className="w-3 h-3 mr-1" />Subscription</Badge>}
-              {product.featured && <Badge variant="featured">Featured</Badge>}
-              {stockTracked && (outOfStock ? <Badge variant="out_of_stock">Out of stock</Badge> : lowStock ? <Badge variant="low_stock">Only {product.stock} left</Badge> : <Badge variant="in_stock">In stock</Badge>)}
-            </div>
-
-            <div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.05] tracking-tight">{product.name}</h1>
-              <div className="mt-4 flex flex-wrap items-baseline gap-3"><span className="text-4xl lg:text-5xl font-black text-white">{formatMoney(totalPrice, currency)}</span>{product.old_price && <span className="text-lg text-zinc-500 line-through">{formatMoney(product.old_price, currency)}</span>}{product.subscription && <span className="text-zinc-400 text-base">/ {product.period_num && product.period_num > 1 ? `${product.period_num} ` : ''}{periodLabel}</span>}</div>
-              {extrasPrice > 0 && <div className="mt-2 text-sm text-zinc-400">Base {formatMoney(product.price, currency)} + options {formatMoney(extrasPrice, currency)}</div>}
-              {product.discount_end && (product.discount_end < 1e12 ? product.discount_end * 1000 : product.discount_end) > Date.now() && <div className="mt-3"><DiscountCountdown endTimestamp={product.discount_end} /></div>}
-            </div>
-
-            {(product.description || product.small_description) && <div className="rounded-2xl border border-white/8 bg-[#18181b]/85 p-5"><div className="prose dark:prose-invert max-w-none text-zinc-300 leading-relaxed text-sm sm:text-base [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_strong]:text-white [&_a]:text-red-400 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 last:[&_p]:mb-0" dangerouslySetInnerHTML={{ __html: product.description || product.small_description || '' }} /></div>}
-
-            <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 bg-[#18181b] divide-x divide-white/8">
-              <div className="px-2 py-4 text-center"><Zap className="w-5 h-5 text-red-500 mx-auto mb-2" /><div className="text-[11px] sm:text-xs font-bold text-white">Fast Delivery</div></div>
-              <div className="px-2 py-4 text-center"><Shield className="w-5 h-5 text-red-500 mx-auto mb-2" /><div className="text-[11px] sm:text-xs font-bold text-white">Secure Checkout</div></div>
-              <div className="px-2 py-4 text-center"><MessageCircle className="w-5 h-5 text-red-500 mx-auto mb-2" /><div className="text-[11px] sm:text-xs font-bold text-white">Discord Support</div></div>
-            </div>
-
-            {product.server_options && product.server_options.length > 0 && <div className="rounded-2xl border border-white/10 bg-[#18181b] p-5"><h3 className="text-xs font-black uppercase tracking-[.18em] text-zinc-400 mb-3">Servers available</h3><div className="flex flex-wrap gap-2">{product.server_options.map((srv) => <span key={srv.id} className="px-3 py-1.5 bg-[#222225] border border-white/8 rounded-lg text-sm text-zinc-300">{srv.name}</span>)}</div></div>}
-
-            {product.custom_fields && product.custom_fields.length > 0 && <div className="rounded-2xl border border-white/10 bg-[#18181b] p-5"><div className="flex items-center gap-2 mb-5"><Settings2 className="w-4 h-4 text-red-500" /><h3 className="text-xs font-black uppercase tracking-[.18em] text-white">Customize</h3></div><CustomFieldsForm fields={product.custom_fields} values={customFieldValues} onChange={setCustomFieldValues} rules={product.custom_rules} currency={currency} />{extrasPrice > 0 && <div className="mt-4 pt-3 border-t border-white/10 flex justify-between"><span className="text-xs text-zinc-400">Options</span><span className="text-sm font-semibold text-red-400">+{formatMoney(extrasPrice, currency)}</span></div>}</div>}
-
-            <div className="rounded-2xl border border-red-500/20 bg-[#18181b] p-4 sm:p-5 shadow-[0_20px_55px_rgba(0,0,0,.32)]">
-              {product.subscription ? <div className="space-y-3">
-                {alreadySubscribedToDemonVip && <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3 text-sm font-semibold text-emerald-300"><CheckCircle className="mr-2 inline h-4 w-4" />DEMON VIP is already active on your account.</div>}
-                <button disabled={outOfStock} onClick={() => handleAddToCart('addtocart')} className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-500/40 text-white bg-[#222225] hover:border-red-400/70 transition disabled:opacity-40"><ShoppingBag className="w-5 h-5" />Buy 1 month — {formatMoney(totalPrice, currency)}</button>
-                <button disabled={outOfStock || alreadySubscribedToDemonVip || vipStatusLoading} onClick={() => handleAddToCart('subscribe')} className="da-action-pulse btn-primary w-full py-4 text-base disabled:opacity-40 flex items-center justify-center gap-2"><RefreshCw className="w-5 h-5" />{alreadySubscribedToDemonVip ? 'Already subscribed' : vipStatusLoading ? 'Checking subscription…' : addedState ? '✓ Added to cart' : `Subscribe — ${formatMoney(totalPrice, currency)} / ${periodLabel}`}</button>
-                <p className="text-xs text-zinc-500 text-center">{alreadySubscribedToDemonVip ? 'Your active subscription must end before starting another recurring DEMON VIP subscription.' : 'Subscription renews automatically. Cancel anytime.'}</p>
-              </div> : <div className="flex items-stretch gap-3"><div className="flex items-center rounded-xl overflow-hidden bg-[#222225] border border-white/10 shrink-0"><button onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Minus className="w-4 h-4" /></button><span className="w-8 sm:w-10 text-center text-white font-bold tabular-nums">{quantity}</span><button onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))} disabled={stockTracked && quantity >= maxQuantity} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Plus className="w-4 h-4" /></button></div><button disabled={outOfStock} onClick={() => handleAddToCart('addtocart', quantity)} className="da-action-pulse btn-primary flex-1 py-4 text-sm sm:text-base disabled:opacity-40 flex items-center justify-center gap-2"><ShoppingBag className="w-5 h-5" />{outOfStock ? 'Out of stock' : addedState ? '✓ Added to cart' : `Add to cart — ${formatMoney(totalPrice * quantity, currency)}`}</button></div>}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-14"><RelatedProducts currentProductId={product.id} categoryId={product.category?.id} limit={4} /></div>
-      </div>
-    </div>
-  );
+  if (!product) return <div className="pt-32 text-center"><div className="max-w-md mx-auto px-4">{loadError && <ApiErrorNotice title="Product loading error" message={loadError} />}<h2 className="text-2xl font-bold text-heading mb-4">{t('product.not_found.title')}</h2><p className="text-zinc-400 mb-8">{t('product.not_found.description')}</p><Link to="/products" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"><ArrowLeft className="w-4 h-4" />{t('product.back_to_shop')}</Link></div></div>;
+  const images = product.gallery?.length ? product.gallery : product.image ? [product.image] : []; const periodLabel = product.duration_periodicity ? translatePeriodicity(product.duration_periodicity,'en') : 'month'; const totalPrice = product.price + extrasPrice;
+  function dismissCheckoutStatus(){searchParams.delete('checkout');setSearchParams(searchParams);}
+  const handleAddToCart=(type:'addtocart'|'subscribe',qty:number=1)=>{if(outOfStock)return;if(alreadySubscribedToDemonVip){addToast('You already have an active DEMON VIP subscription.','warning');return;}const result=addItem(product,customFieldValues,product.server_options?.[0]?.id,type,qty);if(!result.ok){addToast(t('cart.toast.subscription_conflict'),'error');return;}addToast(type==='subscribe'?t('product.toast.added_subscription',{name:product.name}):t('product.toast.added_qty',{name:product.name,qty}),'success');setAddedState(true);window.setTimeout(()=>setAddedState(false),1600);if(qty>0)setQuantity(1);};
+  return <div className="pt-24 lg:pt-28 pb-20 animate-fade-in relative"><div className="fixed inset-0 pointer-events-none -z-10"><div className="absolute top-1/4 right-0 w-[650px] h-[650px] bg-red-600/8 rounded-full blur-3xl" /></div><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    {checkoutStatus==='success'&&<div className="mb-6 flex items-center gap-3 p-4 bg-red-600/10 border border-red-600/20 rounded-xl"><CheckCircle className="w-5 h-5 text-red-500 shrink-0"/><p className="text-red-300 flex-1">{t('product.banner.checkout_success')}</p><button onClick={dismissCheckoutStatus} className="text-zinc-400 hover:text-white"><XCircle className="w-4 h-4"/></button></div>}{checkoutStatus==='canceled'&&<div className="mb-6 flex items-center gap-3 p-4 bg-zinc-800 border border-zinc-700 rounded-xl"><XCircle className="w-5 h-5 text-zinc-300 shrink-0"/><p className="text-zinc-300 flex-1">{t('product.banner.checkout_canceled')}</p><button onClick={dismissCheckoutStatus} className="text-zinc-400 hover:text-white"><XCircle className="w-4 h-4"/></button></div>}
+    <div className="flex items-center gap-2 text-sm text-zinc-500 mb-5 lg:mb-8 overflow-hidden"><Link to="/products" className="inline-flex items-center gap-2 hover:text-white transition-colors shrink-0"><ArrowLeft className="w-4 h-4"/> Shop</Link>{product.category?.name&&<><span>/</span><Link to={`/products?category=${product.category.slug}`} className="hover:text-white transition-colors shrink-0">{product.category.name}</Link></>}<span>/</span><span className="truncate">{product.name}</span></div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-14 items-start"><div className="space-y-3 lg:sticky lg:top-28"><div className="relative aspect-square overflow-hidden rounded-3xl border border-red-500/20 bg-[#18181b] shadow-[0_26px_80px_rgba(0,0,0,.42),0_0_38px_rgba(127,29,29,.12)] group">{images.length>0?<img src={images[selectedImage]} alt={product.name} className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.035]"/>:<div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-950/50 via-[#18181b] to-[#111113]"><Star className="w-20 h-20 text-zinc-700"/></div>}<div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/5 rounded-3xl"/></div>{images.length>1&&<div className="flex gap-2 overflow-x-auto py-1">{images.map((img,idx)=><button key={idx} onClick={()=>setSelectedImage(idx)} className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition ${selectedImage===idx?'border-red-500':'border-white/10 opacity-60'}`}><img src={img} alt="" className="w-full h-full object-cover"/></button>)}</div>}</div>
+    <div className="space-y-5"><div className="flex flex-wrap gap-2">{product.category?.name&&<span className="inline-flex items-center rounded-full border border-red-500/25 bg-red-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[.16em] text-red-300">{product.category.name}</span>}{product.percent_off&&product.percent_off>0?<Badge variant="discount">-{product.percent_off}%</Badge>:null}{product.subscription&&<Badge variant="subscription"><RefreshCw className="w-3 h-3 mr-1"/>Subscription</Badge>}{product.featured&&<Badge variant="featured">Featured</Badge>}{stockTracked&&(outOfStock?<Badge variant="out_of_stock">Out of stock</Badge>:lowStock?<Badge variant="low_stock">Only {product.stock} left</Badge>:<Badge variant="in_stock">In stock</Badge>)}</div>
+    <div><h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.05] tracking-tight">{product.name}</h1><div className="mt-4 flex flex-wrap items-baseline gap-3"><span className="text-4xl lg:text-5xl font-black text-white">{formatMoney(totalPrice,currency)}</span>{product.old_price&&<span className="text-lg text-zinc-500 line-through">{formatMoney(product.old_price,currency)}</span>}{product.subscription&&<span className="text-zinc-400 text-base">/ {product.period_num&&product.period_num>1?`${product.period_num} `:''}{periodLabel}</span>}</div>{extrasPrice>0&&<div className="mt-2 text-sm text-zinc-400">Base {formatMoney(product.price,currency)} + options {formatMoney(extrasPrice,currency)}</div>}{product.discount_end&&(product.discount_end<1e12?product.discount_end*1000:product.discount_end)>Date.now()&&<div className="mt-3"><DiscountCountdown endTimestamp={product.discount_end}/></div>}</div>
+    {(product.description||product.small_description)&&<div className="rounded-2xl border border-white/8 bg-[#18181b]/85 p-5"><div className="prose dark:prose-invert max-w-none text-zinc-300 leading-relaxed text-sm sm:text-base [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_strong]:text-white [&_a]:text-red-400 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_p]:mb-3 last:[&_p]:mb-0" dangerouslySetInnerHTML={{__html:product.description||product.small_description||''}}/></div>}
+    <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 bg-[#18181b] divide-x divide-white/8"><div className="px-2 py-4 text-center"><Zap className="w-5 h-5 text-red-500 mx-auto mb-2"/><div className="text-[11px] sm:text-xs font-bold text-white">Fast Delivery</div></div><div className="px-2 py-4 text-center"><Shield className="w-5 h-5 text-red-500 mx-auto mb-2"/><div className="text-[11px] sm:text-xs font-bold text-white">Secure Checkout</div></div><div className="px-2 py-4 text-center"><MessageCircle className="w-5 h-5 text-red-500 mx-auto mb-2"/><div className="text-[11px] sm:text-xs font-bold text-white">Discord Support</div></div></div>
+    {product.server_options&&product.server_options.length>0&&<div className="rounded-2xl border border-white/10 bg-[#18181b] p-5"><h3 className="text-xs font-black uppercase tracking-[.18em] text-zinc-400 mb-3">Servers available</h3><div className="flex flex-wrap gap-2">{product.server_options.map(srv=><span key={srv.id} className="px-3 py-1.5 bg-[#222225] border border-white/8 rounded-lg text-sm text-zinc-300">{srv.name}</span>)}</div></div>}
+    {product.custom_fields&&product.custom_fields.length>0&&<div className="rounded-2xl border border-white/10 bg-[#18181b] p-5"><div className="flex items-center gap-2 mb-5"><Settings2 className="w-4 h-4 text-red-500"/><h3 className="text-xs font-black uppercase tracking-[.18em] text-white">Customize</h3></div><CustomFieldsForm fields={product.custom_fields} values={customFieldValues} onChange={setCustomFieldValues} rules={product.custom_rules} currency={currency}/>{extrasPrice>0&&<div className="mt-4 pt-3 border-t border-white/10 flex justify-between"><span className="text-xs text-zinc-400">Options</span><span className="text-sm font-semibold text-red-400">+{formatMoney(extrasPrice,currency)}</span></div>}</div>}
+    <div className="rounded-2xl border border-red-500/20 bg-[#18181b] p-4 sm:p-5 shadow-[0_20px_55px_rgba(0,0,0,.32)]">{product.subscription?<div className="space-y-3">{alreadySubscribedToDemonVip&&<div className="rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3 text-sm font-semibold text-emerald-300"><CheckCircle className="mr-2 inline h-4 w-4"/>DEMON VIP is already active on your account.</div>}<button disabled={outOfStock||alreadySubscribedToDemonVip||vipStatusLoading} onClick={()=>handleAddToCart('addtocart')} className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-500/40 text-white bg-[#222225] hover:border-red-400/70 transition disabled:opacity-40"><ShoppingBag className="w-5 h-5"/>{alreadySubscribedToDemonVip?'Already subscribed':vipStatusLoading?'Checking subscription…':`Buy 1 month — ${formatMoney(totalPrice,currency)}`}</button><button disabled={outOfStock||alreadySubscribedToDemonVip||vipStatusLoading} onClick={()=>handleAddToCart('subscribe')} className="da-action-pulse btn-primary w-full py-4 text-base disabled:opacity-40 flex items-center justify-center gap-2"><RefreshCw className="w-5 h-5"/>{alreadySubscribedToDemonVip?'Already subscribed':vipStatusLoading?'Checking subscription…':addedState?'✓ Added to cart':`Subscribe — ${formatMoney(totalPrice,currency)} / ${periodLabel}`}</button><p className="text-xs text-zinc-500 text-center">{alreadySubscribedToDemonVip?'Your active subscription must end before purchasing another DEMON VIP membership.':'Subscription renews automatically. Cancel anytime.'}</p></div>:<div className="flex items-stretch gap-3"><div className="flex items-center rounded-xl overflow-hidden bg-[#222225] border border-white/10 shrink-0"><button onClick={()=>setQuantity(q=>Math.max(1,q-1))} disabled={quantity<=1} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Minus className="w-4 h-4"/></button><span className="w-8 sm:w-10 text-center text-white font-bold tabular-nums">{quantity}</span><button onClick={()=>setQuantity(q=>Math.min(maxQuantity,q+1))} disabled={stockTracked&&quantity>=maxQuantity} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Plus className="w-4 h-4"/></button></div><button disabled={outOfStock} onClick={()=>handleAddToCart('addtocart',quantity)} className="da-action-pulse btn-primary flex-1 py-4 text-sm sm:text-base disabled:opacity-40 flex items-center justify-center gap-2"><ShoppingBag className="w-5 h-5"/>{outOfStock?'Out of stock':addedState?'✓ Added to cart':`Add to cart — ${formatMoney(totalPrice*quantity,currency)}`}</button></div>}</div>
+    </div></div><div className="mt-14"><RelatedProducts currentProductId={product.id} categoryId={product.category?.id} limit={4}/></div></div></div>;
 }
