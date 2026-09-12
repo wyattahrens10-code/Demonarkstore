@@ -32,48 +32,71 @@ export default function Hero() {
 
   useEffect(() => {
     const background = document.querySelector<HTMLElement>('.da-home-bg');
-    if (!background) return;
+    const home = document.querySelector<HTMLElement>('.da-home');
+    if (!background || !home) return;
 
     let raf = 0;
-    let current = 0;
-    let target = 0;
+    let stableViewportHeight = window.innerHeight;
+    let stableWidth = window.innerWidth;
+    let scrollable = 1;
     let running = true;
     const mobile = window.matchMedia('(max-width: 767px)').matches;
 
-    // Keep the image near a constant size so iOS Safari does not have to
-    // continuously composite an increasingly large full-screen texture.
-    // Use more vertical travel instead so the parallax remains noticeable.
-    const baseScale = mobile ? 1.055 : 1.035;
-    const scaleRange = mobile ? 0.035 : 0.045;
-    const shiftRange = mobile ? -128 : -72;
-    const smoothing = mobile ? 0.18 : 0.13;
+    // Keep enough scale change to make the zoom visible, but avoid the very
+    // large texture growth that was expensive on mobile Safari.
+    const baseScale = mobile ? 1.065 : 1.04;
+    const scaleRange = mobile ? 0.075 : 0.085;
+    const shiftRange = mobile ? -160 : -88;
 
-    const updateTarget = () => {
-      const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      target = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
-      if (!raf) raf = window.requestAnimationFrame(animate);
+    const measure = () => {
+      scrollable = Math.max(document.documentElement.scrollHeight - stableViewportHeight, 1);
     };
 
-    const animate = () => {
+    const render = () => {
       raf = 0;
       if (!running) return;
 
-      current += (target - current) * smoothing;
-      if (Math.abs(target - current) < 0.0007) current = target;
-
-      const scale = baseScale + current * scaleRange;
-      const shift = shiftRange * current;
+      const progress = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
+      const scale = baseScale + progress * scaleRange;
+      const shift = shiftRange * progress;
       background.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
-
-      if (current !== target) raf = window.requestAnimationFrame(animate);
     };
 
-    updateTarget();
-    window.addEventListener('scroll', updateTarget, { passive: true });
+    const requestRender = () => {
+      if (!raf) raf = window.requestAnimationFrame(render);
+    };
+
+    const onResize = () => {
+      // Safari changes only the viewport height while its address/tool bars
+      // collapse during downward scrolling. Ignore those height-only changes
+      // so the parallax denominator stays stable instead of jumping mid-scroll.
+      const width = window.innerWidth;
+      if (Math.abs(width - stableWidth) > 2) {
+        stableWidth = width;
+        stableViewportHeight = window.innerHeight;
+        measure();
+      }
+      requestRender();
+    };
+
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
+
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(() => {
+          measure();
+          requestRender();
+        })
+      : null;
+    resizeObserver?.observe(home);
 
     return () => {
       running = false;
-      window.removeEventListener('scroll', updateTarget);
+      window.removeEventListener('scroll', requestRender);
+      window.removeEventListener('resize', onResize);
+      resizeObserver?.disconnect();
       if (raf) window.cancelAnimationFrame(raf);
       background.style.removeProperty('transform');
     };
