@@ -46,12 +46,13 @@ export default function Hero() {
     const animate = () => {
       raf = 0;
       if (!running) return;
-      current += (target - current) * (mobile ? 0.14 : 0.09);
+      current += (target - current) * (mobile ? 0.18 : 0.12);
       if (Math.abs(target - current) < 0.0008) current = target;
-      const scale = (mobile ? 1.035 : 1.015) + current * (mobile ? 0.12 : 0.18);
-      const shift = (mobile ? -34 : -12) * current;
+      const scale = (mobile ? 1.045 : 1.025) + current * (mobile ? 0.18 : 0.21);
+      const shift = (mobile ? -82 : -42) * current;
       document.documentElement.style.setProperty('--da-bg-scale', scale.toFixed(4));
       document.documentElement.style.setProperty('--da-bg-shift', `${shift.toFixed(2)}px`);
+      document.documentElement.style.setProperty('--da-scroll-progress', current.toFixed(4));
       if (current !== target) raf = window.requestAnimationFrame(animate);
     };
 
@@ -64,6 +65,31 @@ export default function Hero() {
       if (raf) window.cancelAnimationFrame(raf);
       document.documentElement.style.removeProperty('--da-bg-scale');
       document.documentElement.style.removeProperty('--da-bg-shift');
+      document.documentElement.style.removeProperty('--da-scroll-progress');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+    let raf = 0;
+    let nextX = 50;
+    let nextY = 35;
+    const commit = () => {
+      raf = 0;
+      document.documentElement.style.setProperty('--da-pointer-x', `${nextX.toFixed(2)}%`);
+      document.documentElement.style.setProperty('--da-pointer-y', `${nextY.toFixed(2)}%`);
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      nextX = (event.clientX / window.innerWidth) * 100;
+      nextY = (event.clientY / window.innerHeight) * 100;
+      if (!raf) raf = window.requestAnimationFrame(commit);
+    };
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      if (raf) window.cancelAnimationFrame(raf);
+      document.documentElement.style.removeProperty('--da-pointer-x');
+      document.documentElement.style.removeProperty('--da-pointer-y');
     };
   }, []);
 
@@ -104,7 +130,16 @@ export default function Hero() {
   return (
     <section className="da-home">
       <div className="da-home-bg" aria-hidden="true" />
+      <div className="da-fire-glow" aria-hidden="true" />
+      <div className="da-smoke da-smoke-a" aria-hidden="true" />
+      <div className="da-smoke da-smoke-b" aria-hidden="true" />
       <div className="da-home-shade" aria-hidden="true" />
+      <div className="da-embers da-embers-far" aria-hidden="true" />
+      <div className="da-embers da-embers-mid" aria-hidden="true" />
+      <div className="da-embers da-embers-near" aria-hidden="true" />
+      <div className="da-red-flare" aria-hidden="true" />
+      <div className="da-heat-haze" aria-hidden="true" />
+      <div className="da-pointer-glow" aria-hidden="true" />
 
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
         {store?.logo && (
