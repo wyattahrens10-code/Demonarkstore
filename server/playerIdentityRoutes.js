@@ -118,7 +118,12 @@ async function loadUserSubscriptions(token) {
 
 async function loadRecentStorePayments() {
   const apiKey = await loadStoreApiKey();
-  if (!apiKey) return [];
+  if (!apiKey) {
+    console.warn('[DEMON_VIP_STORE_PAYMENTS_ERROR]', JSON.stringify({
+      reason: 'missing_api_key',
+    }));
+    return [];
+  }
 
   const params = new URLSearchParams({ page: '1', max_page: '50' });
   const response = await fetch(`${TIP4SERV_BASE}/store/payments?${params.toString()}`, {
@@ -127,9 +132,45 @@ async function loadRecentStorePayments() {
       Accept: 'application/json',
     },
   });
-  if (!response.ok) return [];
-  const data = await response.json();
-  return Array.isArray(data) ? data : Array.isArray(data?.payments) ? data.payments : [];
+
+  const raw = await response.text();
+  let data = null;
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    const safeMessage = data?.error?.message ?? data?.message ?? data?.error ?? (raw ? raw.slice(0, 500) : null);
+    console.warn('[DEMON_VIP_STORE_PAYMENTS_ERROR]', JSON.stringify({
+      status: response.status,
+      status_text: response.statusText || null,
+      message: safeMessage ? String(safeMessage).slice(0, 500) : null,
+    }));
+    return [];
+  }
+
+  const payments = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.payments)
+      ? data.payments
+      : Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.items)
+          ? data.items
+          : Array.isArray(data?.results)
+            ? data.results
+            : [];
+
+  console.log('[DEMON_VIP_STORE_PAYMENTS_RESPONSE]', JSON.stringify({
+    status: response.status,
+    top_level_type: Array.isArray(data) ? 'array' : data && typeof data === 'object' ? 'object' : typeof data,
+    top_level_keys: data && !Array.isArray(data) && typeof data === 'object' ? Object.keys(data).slice(0, 20) : [],
+    parsed_payment_count: payments.length,
+  }));
+
+  return payments;
 }
 
 function paymentBelongsToUser(payment, user) {
