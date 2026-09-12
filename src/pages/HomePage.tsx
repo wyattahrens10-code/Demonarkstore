@@ -12,7 +12,7 @@ export default function HomePage() {
       <Hero />
       {storeError && (
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-          <ApiErrorNotice title="Erreur boutique Tip4Serv" message={storeError} />
+          <ApiErrorNotice title="DemonArk store connection error" message={storeError} />
         </div>
       )}
     </div>
