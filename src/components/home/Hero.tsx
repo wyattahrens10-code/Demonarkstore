@@ -35,28 +35,41 @@ export default function Hero() {
     const background = document.querySelector<HTMLElement>('.da-home-bg');
     if (!background) return;
 
-    // The background is intentionally NOT scroll-linked anymore. It moves on
-    // its own compositor animation so scrolling has no extra JS/native timeline work.
     const mobile = window.matchMedia('(max-width: 767px)').matches;
+
+    // Keep the background independent from scroll so mobile browsers do not
+    // have to recalculate or repaint it while the page is actively scrolling.
+    // Start from the exact resting transform to avoid the initial one-frame snap.
+    const start = mobile
+      ? 'translate3d(0, 0, 0) scale(1.045)'
+      : 'translate3d(0, 0, 0) scale(1.025)';
+    const middle = mobile
+      ? 'translate3d(0, -34px, 0) scale(1.075)'
+      : 'translate3d(0, -30px, 0) scale(1.055)';
+    const end = mobile
+      ? 'translate3d(0, -64px, 0) scale(1.105)'
+      : 'translate3d(0, -58px, 0) scale(1.085)';
+
+    background.style.transform = start;
+
     const animation = background.animate(
-      mobile
-        ? [
-            { transform: 'translate3d(0, 0, 0) scale(1.035)' },
-            { transform: 'translate3d(0, -28px, 0) scale(1.07)' },
-          ]
-        : [
-            { transform: 'translate3d(0, 0, 0) scale(1.02)' },
-            { transform: 'translate3d(0, -38px, 0) scale(1.065)' },
-          ],
+      [
+        { transform: start },
+        { transform: middle },
+        { transform: end },
+      ],
       {
-        duration: mobile ? 16000 : 18000,
+        duration: mobile ? 7200 : 9000,
         direction: 'alternate',
         iterations: Infinity,
         easing: 'ease-in-out',
       },
     );
 
-    return () => animation.cancel();
+    return () => {
+      animation.cancel();
+      background.style.removeProperty('transform');
+    };
   }, []);
 
   useEffect(() => {
