@@ -42,11 +42,11 @@ export default function Hero() {
     let running = true;
     const mobile = window.matchMedia('(max-width: 767px)').matches;
 
-    // Keep enough scale change to make the zoom visible, but avoid the very
-    // large texture growth that was expensive on mobile Safari.
-    const baseScale = mobile ? 1.065 : 1.04;
-    const scaleRange = mobile ? 0.075 : 0.085;
-    const shiftRange = mobile ? -160 : -88;
+    // The fixed frame never transforms. Only this oversized child texture moves,
+    // which avoids the WebKit/iOS jank caused by transforming a fixed full-screen layer.
+    const baseScale = mobile ? 1.01 : 1.005;
+    const scaleRange = mobile ? 0.08 : 0.09;
+    const shiftRange = mobile ? -145 : -82;
 
     const measure = () => {
       scrollable = Math.max(document.documentElement.scrollHeight - stableViewportHeight, 1);
@@ -67,9 +67,6 @@ export default function Hero() {
     };
 
     const onResize = () => {
-      // Safari changes only the viewport height while its address/tool bars
-      // collapse during downward scrolling. Ignore those height-only changes
-      // so the parallax denominator stays stable instead of jumping mid-scroll.
       const width = window.innerWidth;
       if (Math.abs(width - stableWidth) > 2) {
         stableWidth = width;
@@ -162,7 +159,16 @@ export default function Hero() {
 
   return (
     <section className="da-home">
-      <div className="da-home-bg" aria-hidden="true" />
+      <div
+        className="da-home-bg-frame"
+        aria-hidden="true"
+        style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -9, pointerEvents: 'none', contain: 'strict' }}
+      >
+        <div
+          className="da-home-bg"
+          style={{ position: 'absolute', inset: '-14%', width: 'auto', height: 'auto', zIndex: 0 }}
+        />
+      </div>
       <div className="da-fire-glow" aria-hidden="true" />
       <div className="da-smoke da-smoke-a" aria-hidden="true" />
       <div className="da-smoke da-smoke-b" aria-hidden="true" />
