@@ -36,38 +36,31 @@ export default function Hero() {
     if (!background) return;
 
     const mobile = window.matchMedia('(max-width: 767px)').matches;
+    const baseScale = mobile ? 1.055 : 1.035;
+    const travel = mobile ? -120 : -82;
+    const stableViewportHeight = window.innerHeight;
+    const scrollRange = Math.max(document.documentElement.scrollHeight - stableViewportHeight, 1);
+    let raf = 0;
 
-    // Keep the background independent from scroll so mobile browsers do not
-    // have to recalculate or repaint it while the page is actively scrolling.
-    // Start from the exact resting transform to avoid the initial one-frame snap.
-    const start = mobile
-      ? 'translate3d(0, 0, 0) scale(1.045)'
-      : 'translate3d(0, 0, 0) scale(1.025)';
-    const middle = mobile
-      ? 'translate3d(0, -34px, 0) scale(1.075)'
-      : 'translate3d(0, -30px, 0) scale(1.055)';
-    const end = mobile
-      ? 'translate3d(0, -64px, 0) scale(1.105)'
-      : 'translate3d(0, -58px, 0) scale(1.085)';
+    // Translation-only parallax. The texture stays at one constant scale so
+    // mobile WebKit never has to continually resample/zoom the full-screen image.
+    const render = () => {
+      raf = 0;
+      const progress = Math.min(Math.max(window.scrollY / scrollRange, 0), 1);
+      const shift = travel * progress;
+      background.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0) scale(${baseScale})`;
+    };
 
-    background.style.transform = start;
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(render);
+    };
 
-    const animation = background.animate(
-      [
-        { transform: start },
-        { transform: middle },
-        { transform: end },
-      ],
-      {
-        duration: mobile ? 7200 : 9000,
-        direction: 'alternate',
-        iterations: Infinity,
-        easing: 'ease-in-out',
-      },
-    );
+    render();
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
-      animation.cancel();
+      window.removeEventListener('scroll', onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
       background.style.removeProperty('transform');
     };
   }, []);
