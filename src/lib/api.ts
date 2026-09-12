@@ -7,6 +7,7 @@ import type {
   Product,
 } from './types';
 import { decodeProductData, decodeHtmlEntities } from './utils';
+import { getDemonArkCategoryArtwork } from './categoryArtwork';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const API_URL = `${API_BASE_URL}/api/tip4serv-proxy`;
@@ -79,6 +80,7 @@ export async function getCategories(): Promise<CategoriesResponse> {
       ...cat,
       name: decodeHtmlEntities(cat.name),
       description: cat.description ? decodeHtmlEntities(cat.description) : cat.description,
+      image: getDemonArkCategoryArtwork(cat.slug, cat.name) || cat.image,
     }))
     .filter(cat => {
       const name = (cat.name || '').trim().toLowerCase();
