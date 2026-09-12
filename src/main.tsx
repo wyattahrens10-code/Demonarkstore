@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import './demonark-v1.css';
+import './demonark-polish.css';
 
 const DISCORD_INVITE = 'https://discord.gg/CgVqbyGr4E';
 const LANGUAGE_STORAGE_KEY = 'app.language';
