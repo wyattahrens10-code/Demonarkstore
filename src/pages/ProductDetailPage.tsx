@@ -11,11 +11,20 @@ import { getProductBySlug } from '../lib/api';
 import { useCart } from '../lib/cart';
 import { useToast } from '../lib/toast';
 import { useLanguage } from '../lib/i18n';
+import { useTip4ServAuth } from '../lib/tip4servAuth';
 import type { Product } from '../lib/types';
 import { formatMoney, getCustomFieldDefaults, translatePeriodicity } from '../lib/utils';
 import { computeExtrasPrice } from '../lib/pricing';
 import { useStore } from '../lib/store';
 import { usePageTitle } from '../lib/usePageTitle';
+
+type VipStatus = {
+  active: boolean;
+  membership_type?: 'owner' | 'test_one_time' | 'one_time' | 'recurring' | null;
+  subscription?: {
+    unsubscribed?: boolean;
+  } | null;
+};
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -27,12 +36,16 @@ export default function ProductDetailPage() {
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | number>>({});
   const [quantity, setQuantity] = useState(1);
   const [addedState, setAddedState] = useState(false);
+  const [vipStatus, setVipStatus] = useState<VipStatus | null>(null);
+  const [vipStatusLoading, setVipStatusLoading] = useState(false);
   const { addItem } = useCart();
   const { addToast } = useToast();
   const { t } = useLanguage();
   const { store } = useStore();
+  const { token } = useTip4ServAuth();
   const currency = store?.currency;
   const checkoutStatus = searchParams.get('checkout');
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
   usePageTitle(product?.name || null);
 
@@ -55,6 +68,36 @@ export default function ProductDetailPage() {
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [slug]);
   useEffect(() => { if (product?.custom_fields) setCustomFieldValues(getCustomFieldDefaults(product.custom_fields)); }, [product]);
+
+  useEffect(() => {
+    const isDemonVipProduct = Boolean(product?.subscription && String(product?.name || '').toUpperCase().includes('DEMON VIP'));
+    if (!token || !isDemonVipProduct) {
+      setVipStatus(null);
+      setVipStatusLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setVipStatusLoading(true);
+    fetch(`${apiBaseUrl}/api/account/vip-status`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Unable to verify Demon VIP status.');
+        return res.json();
+      })
+      .then((data) => {
+        if (!cancelled) setVipStatus(data as VipStatus);
+      })
+      .catch(() => {
+        if (!cancelled) setVipStatus(null);
+      })
+      .finally(() => {
+        if (!cancelled) setVipStatusLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [token, product?.id, product?.name, product?.subscription, apiBaseUrl]);
 
   useEffect(() => {
     if (!product) return;
@@ -82,6 +125,13 @@ export default function ProductDetailPage() {
   const outOfStock = stockTracked && stockValue <= 0;
   const lowStock = stockTracked && !outOfStock && stockValue <= 5;
   const maxQuantity = stockTracked ? Math.max(1, stockValue) : Infinity;
+  const isDemonVipProduct = Boolean(product?.subscription && String(product?.name || '').toUpperCase().includes('DEMON VIP'));
+  const alreadySubscribedToDemonVip = isDemonVipProduct && Boolean(
+    vipStatus?.active && (
+      vipStatus.membership_type === 'owner' ||
+      (vipStatus.membership_type === 'recurring' && !vipStatus.subscription?.unsubscribed)
+    )
+  );
 
   useEffect(() => { if (stockTracked && quantity > maxQuantity) setQuantity(Math.max(1, maxQuantity)); }, [stockTracked, maxQuantity, quantity]);
 
@@ -99,6 +149,10 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = (type: 'addtocart' | 'subscribe', qty: number = 1) => {
     if (outOfStock) return;
+    if (type === 'subscribe' && alreadySubscribedToDemonVip) {
+      addToast('You already have an active DEMON VIP subscription.', 'warning');
+      return;
+    }
     const result = addItem(product, customFieldValues, product.server_options?.[0]?.id, type, qty);
     if (!result.ok) { addToast(t('cart.toast.subscription_conflict'), 'error'); return; }
     addToast(type === 'subscribe' ? t('product.toast.added_subscription', { name: product.name }) : t('product.toast.added_qty', { name: product.name, qty }), 'success');
@@ -158,7 +212,12 @@ export default function ProductDetailPage() {
             {product.custom_fields && product.custom_fields.length > 0 && <div className="rounded-2xl border border-white/10 bg-[#18181b] p-5"><div className="flex items-center gap-2 mb-5"><Settings2 className="w-4 h-4 text-red-500" /><h3 className="text-xs font-black uppercase tracking-[.18em] text-white">Customize</h3></div><CustomFieldsForm fields={product.custom_fields} values={customFieldValues} onChange={setCustomFieldValues} rules={product.custom_rules} currency={currency} />{extrasPrice > 0 && <div className="mt-4 pt-3 border-t border-white/10 flex justify-between"><span className="text-xs text-zinc-400">Options</span><span className="text-sm font-semibold text-red-400">+{formatMoney(extrasPrice, currency)}</span></div>}</div>}
 
             <div className="rounded-2xl border border-red-500/20 bg-[#18181b] p-4 sm:p-5 shadow-[0_20px_55px_rgba(0,0,0,.32)]">
-              {product.subscription ? <div className="space-y-3"><button disabled={outOfStock} onClick={() => handleAddToCart('addtocart')} className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-500/40 text-white bg-[#222225] hover:border-red-400/70 transition disabled:opacity-40"><ShoppingBag className="w-5 h-5" />Buy 1 month — {formatMoney(totalPrice, currency)}</button><button disabled={outOfStock} onClick={() => handleAddToCart('subscribe')} className="da-action-pulse btn-primary w-full py-4 text-base disabled:opacity-40 flex items-center justify-center gap-2"><RefreshCw className="w-5 h-5" />{addedState ? '✓ Added to cart' : `Subscribe — ${formatMoney(totalPrice, currency)} / ${periodLabel}`}</button><p className="text-xs text-zinc-500 text-center">Subscription renews automatically. Cancel anytime.</p></div> : <div className="flex items-stretch gap-3"><div className="flex items-center rounded-xl overflow-hidden bg-[#222225] border border-white/10 shrink-0"><button onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Minus className="w-4 h-4" /></button><span className="w-8 sm:w-10 text-center text-white font-bold tabular-nums">{quantity}</span><button onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))} disabled={stockTracked && quantity >= maxQuantity} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Plus className="w-4 h-4" /></button></div><button disabled={outOfStock} onClick={() => handleAddToCart('addtocart', quantity)} className="da-action-pulse btn-primary flex-1 py-4 text-sm sm:text-base disabled:opacity-40 flex items-center justify-center gap-2"><ShoppingBag className="w-5 h-5" />{outOfStock ? 'Out of stock' : addedState ? '✓ Added to cart' : `Add to cart — ${formatMoney(totalPrice * quantity, currency)}`}</button></div>}
+              {product.subscription ? <div className="space-y-3">
+                {alreadySubscribedToDemonVip && <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3 text-sm font-semibold text-emerald-300"><CheckCircle className="mr-2 inline h-4 w-4" />DEMON VIP is already active on your account.</div>}
+                <button disabled={outOfStock} onClick={() => handleAddToCart('addtocart')} className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 border border-red-500/40 text-white bg-[#222225] hover:border-red-400/70 transition disabled:opacity-40"><ShoppingBag className="w-5 h-5" />Buy 1 month — {formatMoney(totalPrice, currency)}</button>
+                <button disabled={outOfStock || alreadySubscribedToDemonVip || vipStatusLoading} onClick={() => handleAddToCart('subscribe')} className="da-action-pulse btn-primary w-full py-4 text-base disabled:opacity-40 flex items-center justify-center gap-2"><RefreshCw className="w-5 h-5" />{alreadySubscribedToDemonVip ? 'Already subscribed' : vipStatusLoading ? 'Checking subscription…' : addedState ? '✓ Added to cart' : `Subscribe — ${formatMoney(totalPrice, currency)} / ${periodLabel}`}</button>
+                <p className="text-xs text-zinc-500 text-center">{alreadySubscribedToDemonVip ? 'Your active subscription must end before starting another recurring DEMON VIP subscription.' : 'Subscription renews automatically. Cancel anytime.'}</p>
+              </div> : <div className="flex items-stretch gap-3"><div className="flex items-center rounded-xl overflow-hidden bg-[#222225] border border-white/10 shrink-0"><button onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Minus className="w-4 h-4" /></button><span className="w-8 sm:w-10 text-center text-white font-bold tabular-nums">{quantity}</span><button onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))} disabled={stockTracked && quantity >= maxQuantity} className="w-10 sm:w-11 flex items-center justify-center text-zinc-300 disabled:opacity-30"><Plus className="w-4 h-4" /></button></div><button disabled={outOfStock} onClick={() => handleAddToCart('addtocart', quantity)} className="da-action-pulse btn-primary flex-1 py-4 text-sm sm:text-base disabled:opacity-40 flex items-center justify-center gap-2"><ShoppingBag className="w-5 h-5" />{outOfStock ? 'Out of stock' : addedState ? '✓ Added to cart' : `Add to cart — ${formatMoney(totalPrice * quantity, currency)}`}</button></div>}
             </div>
           </div>
         </div>
