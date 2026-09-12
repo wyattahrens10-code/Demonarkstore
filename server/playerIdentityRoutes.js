@@ -8,6 +8,7 @@ const DEMON_VIP_NAME = 'DEMON VIP';
 const DEMON_VIP_DISCOUNT_PERCENT = 20;
 const DEMON_VIP_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const VIP_COUPON_TTL_MS = 15 * 60 * 1000;
+const OWNER_VIP_USER_IDS = new Set([228127]);
 
 function jsonError(res, status, message) {
   return res.status(status).json({ error: message });
@@ -257,6 +258,21 @@ function logVipDiagnostic(user, subscriptions, storePayments) {
 }
 
 async function getVerifiedVip(token, user) {
+  if (OWNER_VIP_USER_IDS.has(Number(user?.id))) {
+    return {
+      source: 'owner_override',
+      vip: {
+        id: Number(user.id),
+        status: 'active',
+        onetime: false,
+        unsubscribed: false,
+      },
+      expiresAt: 0,
+      testMode: false,
+      ownerOverride: true,
+    };
+  }
+
   const subscriptions = await loadUserSubscriptions(token);
   const liveVip = findDemonVip(subscriptions);
   if (liveVip) {
@@ -297,16 +313,18 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
       active: Boolean(entitlement),
       name: DEMON_VIP_NAME,
       discount_percent: entitlement ? DEMON_VIP_DISCOUNT_PERCENT : 0,
-      mode: entitlement?.testMode ? 'test' : entitlement ? 'live' : null,
+      mode: entitlement?.ownerOverride ? 'owner' : entitlement?.testMode ? 'test' : entitlement ? 'live' : null,
       membership_type: entitlement
-        ? entitlement.testMode
-          ? 'test_one_time'
-          : vip?.onetime
-            ? 'one_time'
-            : 'recurring'
+        ? entitlement.ownerOverride
+          ? 'owner'
+          : entitlement.testMode
+            ? 'test_one_time'
+            : vip?.onetime
+              ? 'one_time'
+              : 'recurring'
         : null,
       active_until: expiresAt ? new Date(expiresAt).toISOString() : null,
-      subscription: entitlement && !entitlement.testMode ? {
+      subscription: entitlement && !entitlement.testMode && !entitlement.ownerOverride ? {
         id: vip.id ?? null,
         status: vip.status ?? null,
         onetime: Boolean(vip.onetime),
@@ -383,7 +401,7 @@ router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
 
     res.json({
       active: true,
-      mode: entitlement.testMode ? 'test' : 'live',
+      mode: entitlement.ownerOverride ? 'owner' : entitlement.testMode ? 'test' : 'live',
       discount_percent: DEMON_VIP_DISCOUNT_PERCENT,
       code: String(couponData.code),
       expires_at: new Date(expiration).toISOString(),
