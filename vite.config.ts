@@ -43,7 +43,7 @@ function injectStoreMeta(apiBaseUrl: string): Plugin {
       order: 'post',
       async handler(html) {
         if (!apiBaseUrl || apiBaseUrl.startsWith('/')) {
-          console.warn('[inject-store-meta] VITE_API_BASE_URL not set to an absolute URL, skipping');
+          console.warn('[inject-store-meta] VITE_API_BASE_URL not set to an absolute URL, using DemonArk fallbacks');
           return html;
         }
         try {
@@ -55,11 +55,11 @@ function injectStoreMeta(apiBaseUrl: string): Plugin {
             return html;
           }
           const store = await res.json();
-          const title = decodeEntities(store.title || 'Boutique');
+          const title = decodeEntities(store.title || 'DemonArk Store');
           const rawDesc = decodeEntities(store.description || store.subtitle || '');
           const description =
-            stripHtml(rawDesc).slice(0, 300) || title;
-          const image = store.logo || '/ASA_Logo.png';
+            stripHtml(rawDesc).slice(0, 300) || 'The official DemonArk store for ARK: Survival Ascended.';
+          const image = store.logo || '/Demonarkdiscordlgo.png';
 
           let out = html;
           out = out.replace(
