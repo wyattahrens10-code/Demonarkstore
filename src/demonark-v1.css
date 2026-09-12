@@ -60,141 +60,26 @@ header nav button {
   filter: drop-shadow(0 0 0 rgba(239,68,68,0));
 }
 
-.da-logo-pulse::after {
-  display: none;
-}
+.da-logo-pulse::after { display: none; }
+.da-logo-base { position: relative; z-index: 1; }
+.da-logo-sheen-copy { position:absolute; inset:0; z-index:2; pointer-events:none; opacity:0; filter:brightness(2.2) saturate(.15) contrast(1.05) drop-shadow(0 0 7px rgba(255,255,255,.28)); mix-blend-mode:screen; clip-path:polygon(22% 18%,28% 18%,42% 74%,35% 74%); animation:da-logo-copy-sheen 3.1s ease-in-out infinite; }
+.da-logo-pulse:hover { animation-play-state: paused; }
+.da-logo-pulse:hover .da-logo-sheen-copy { animation-play-state: paused; }
 
-.da-logo-base {
-  position: relative;
-  z-index: 1;
-}
+.da-action-pulse { position:relative; overflow:hidden; animation:da-action-breathe 1.65s ease-in-out infinite; transform-origin:center; }
+.da-action-pulse::after { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(110deg,transparent 27%,rgba(255,255,255,.05) 41%,rgba(255,255,255,.34) 49%,rgba(255,255,255,.07) 57%,transparent 70%); transform:translateX(-145%); animation:da-action-sheen 3.4s ease-in-out infinite; }
+.da-action-pulse:hover { animation-play-state: paused; }
+.da-discord-button { position:relative; overflow:hidden; }
+.da-portal { box-shadow:0 24px 70px rgba(0,0,0,.48); }
+.da-portal::after { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.10) 48%,transparent 64%); transform:translateX(-125%); transition:transform .75s cubic-bezier(.16,1,.3,1); }
+.da-portal:hover::after { transform:translateX(125%); }
+.da-feature-slide { animation:da-slide-in .55s cubic-bezier(.16,1,.3,1) both; }
 
-.da-logo-sheen-copy {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0;
-  filter: brightness(2.2) saturate(.15) contrast(1.05) drop-shadow(0 0 7px rgba(255,255,255,.28));
-  mix-blend-mode: screen;
-  clip-path: polygon(22% 18%, 28% 18%, 42% 74%, 35% 74%);
-  animation: da-logo-copy-sheen 3.1s ease-in-out infinite;
-}
-
-.da-logo-pulse:hover {
-  animation-play-state: paused;
-}
-
-.da-logo-pulse:hover .da-logo-sheen-copy {
-  animation-play-state: paused;
-}
-
-.da-action-pulse {
-  position: relative;
-  overflow: hidden;
-  animation: da-action-breathe 1.65s ease-in-out infinite;
-  transform-origin: center;
-}
-
-.da-action-pulse::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(110deg, transparent 27%, rgba(255,255,255,.05) 41%, rgba(255,255,255,.34) 49%, rgba(255,255,255,.07) 57%, transparent 70%);
-  transform: translateX(-145%);
-  animation: da-action-sheen 3.4s ease-in-out infinite;
-}
-
-.da-action-pulse:hover {
-  animation-play-state: paused;
-}
-
-.da-discord-button {
-  position: relative;
-  overflow: hidden;
-}
-
-.da-portal {
-  box-shadow: 0 24px 70px rgba(0,0,0,.48);
-}
-
-.da-portal::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.10) 48%, transparent 64%);
-  transform: translateX(-125%);
-  transition: transform .75s cubic-bezier(.16,1,.3,1);
-}
-
-.da-portal:hover::after {
-  transform: translateX(125%);
-}
-
-.da-feature-slide {
-  animation: da-slide-in .55s cubic-bezier(.16,1,.3,1) both;
-}
-
-@keyframes da-logo-breathe {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 3px rgba(239,68,68,.12));
-  }
-  50% {
-    transform: scale(1.095);
-    filter: drop-shadow(0 0 30px rgba(239,68,68,.48));
-  }
-}
-
-@keyframes da-logo-copy-sheen {
-  0%, 56% {
-    opacity: 0;
-    clip-path: polygon(22% 18%, 28% 18%, 42% 74%, 35% 74%);
-  }
-  62% {
-    opacity: .72;
-    clip-path: polygon(31% 21%, 37% 21%, 49% 71%, 42% 71%);
-  }
-  70% {
-    opacity: .8;
-    clip-path: polygon(45% 25%, 50% 25%, 60% 67%, 54% 67%);
-  }
-  78% {
-    opacity: .82;
-    clip-path: polygon(59% 30%, 64% 30%, 73% 62%, 67% 62%);
-  }
-  86%, 100% {
-    opacity: 0;
-    clip-path: polygon(59% 30%, 64% 30%, 73% 62%, 67% 62%);
-  }
-}
-
-@keyframes da-action-breathe {
-  0%, 100% {
-    scale: 1;
-    box-shadow: 0 12px 38px rgba(127,29,29,.24);
-    filter: brightness(1);
-  }
-  50% {
-    scale: 1.045;
-    box-shadow: 0 18px 58px rgba(239,68,68,.48);
-    filter: brightness(1.08);
-  }
-}
-
-@keyframes da-action-sheen {
-  0%, 60% { transform: translateX(-145%); opacity: 0; }
-  68% { opacity: 1; }
-  86% { transform: translateX(145%); opacity: 1; }
-  94%, 100% { transform: translateX(145%); opacity: 0; }
-}
-
-@keyframes da-slide-in {
-  from { opacity: 0; transform: translateY(16px) scale(.985); }
-  to { opacity: 1; transform: none; }
-}
+@keyframes da-logo-breathe { 0%,100%{transform:scale(1);filter:drop-shadow(0 0 3px rgba(239,68,68,.12))} 50%{transform:scale(1.095);filter:drop-shadow(0 0 30px rgba(239,68,68,.48))} }
+@keyframes da-logo-copy-sheen { 0%,56%{opacity:0;clip-path:polygon(22% 18%,28% 18%,42% 74%,35% 74%)} 62%{opacity:.72;clip-path:polygon(31% 21%,37% 21%,49% 71%,42% 71%)} 70%{opacity:.8;clip-path:polygon(45% 25%,50% 25%,60% 67%,54% 67%)} 78%{opacity:.82;clip-path:polygon(59% 30%,64% 30%,73% 62%,67% 62%)} 86%,100%{opacity:0;clip-path:polygon(59% 30%,64% 30%,73% 62%,67% 62%)} }
+@keyframes da-action-breathe { 0%,100%{scale:1;box-shadow:0 12px 38px rgba(127,29,29,.24);filter:brightness(1)} 50%{scale:1.045;box-shadow:0 18px 58px rgba(239,68,68,.48);filter:brightness(1.08)} }
+@keyframes da-action-sheen { 0%,60%{transform:translateX(-145%);opacity:0} 68%{opacity:1} 86%{transform:translateX(145%);opacity:1} 94%,100%{transform:translateX(145%);opacity:0} }
+@keyframes da-slide-in { from{opacity:0;transform:translateY(16px) scale(.985)} to{opacity:1;transform:none} }
 
 @media (max-width: 767px) {
   .da-home-bg,
@@ -210,8 +95,8 @@ header nav button {
   .da-home-bg {
     background-position: 58% center;
     transform-origin: 62% 45%;
-    transform: translate3d(0, 0, 0) scale(1.035);
-    will-change: auto;
+    transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.035));
+    will-change: transform;
   }
 }
 
