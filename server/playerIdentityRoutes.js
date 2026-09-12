@@ -7,7 +7,6 @@ const TIP4SERV_BASE = 'https://api.tip4serv.com/v1';
 const DEMON_VIP_NAME = 'DEMON VIP';
 const DEMON_VIP_DISCOUNT_PERCENT = 20;
 const DEMON_VIP_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
-const VIP_COUPON_TTL_MS = 15 * 60 * 1000;
 const OWNER_VIP_USER_IDS = new Set([228127]);
 
 function jsonError(res, status, message) {
@@ -87,30 +86,17 @@ function getMembershipExpiresAt(subscription) {
 
 function isActiveSubscription(subscription) {
   const status = String(subscription?.status || '').trim().toLowerCase();
-  const paidStatus = [
-    'paid',
-    'active',
-    'processed',
-    'complete',
-    'completed',
-    'succeeded',
-    'success',
-  ].includes(status);
+  const paidStatus = ['paid','active','processed','complete','completed','succeeded','success'].includes(status);
   if (!paidStatus) return false;
-
   const expiresAt = getMembershipExpiresAt(subscription);
   if (expiresAt && expiresAt <= Date.now()) return false;
-
   return true;
 }
 
 async function loadUserSubscriptions(token) {
   const params = new URLSearchParams({ page: '1', max_page: '100', only_recurring_subscription: 'false' });
   const response = await fetch(`${TIP4SERV_BASE}/user/subscriptions?${params.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-    },
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
   });
   if (!response.ok) throw new Error('Unable to verify Demon VIP membership right now.');
   const data = await response.json();
@@ -119,188 +105,62 @@ async function loadUserSubscriptions(token) {
 
 async function loadRecentStorePayments() {
   const apiKey = await loadStoreApiKey();
-  if (!apiKey) {
-    console.warn('[DEMON_VIP_STORE_PAYMENTS_ERROR]', JSON.stringify({
-      reason: 'missing_api_key',
-    }));
-    return [];
-  }
-
+  if (!apiKey) return [];
   const params = new URLSearchParams({ page: '1', max_page: '50' });
   const response = await fetch(`${TIP4SERV_BASE}/store/payments?${params.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      Accept: 'application/json',
-    },
+    headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
   });
-
   const raw = await response.text();
   let data = null;
-  try {
-    data = raw ? JSON.parse(raw) : null;
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok) {
-    const safeMessage = data?.error?.message ?? data?.message ?? data?.error ?? (raw ? raw.slice(0, 500) : null);
-    console.warn('[DEMON_VIP_STORE_PAYMENTS_ERROR]', JSON.stringify({
-      status: response.status,
-      status_text: response.statusText || null,
-      message: safeMessage ? String(safeMessage).slice(0, 500) : null,
-    }));
-    return [];
-  }
-
-  const payments = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.payments)
-      ? data.payments
-      : Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data?.items)
-          ? data.items
-          : Array.isArray(data?.results)
-            ? data.results
-            : [];
-
-  console.log('[DEMON_VIP_STORE_PAYMENTS_RESPONSE]', JSON.stringify({
-    status: response.status,
-    top_level_type: Array.isArray(data) ? 'array' : data && typeof data === 'object' ? 'object' : typeof data,
-    top_level_keys: data && !Array.isArray(data) && typeof data === 'object' ? Object.keys(data).slice(0, 20) : [],
-    parsed_payment_count: payments.length,
-  }));
-
-  return payments;
+  try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+  if (!response.ok) return [];
+  return Array.isArray(data) ? data : Array.isArray(data?.payments) ? data.payments : Array.isArray(data?.data) ? data.data : Array.isArray(data?.items) ? data.items : Array.isArray(data?.results) ? data.results : [];
 }
 
 function paymentBelongsToUser(payment, user) {
   const email = normalizedIdentifier(user?.email);
   const username = normalizedIdentifier(user?.username);
-  const candidates = [
-    payment?.identifier,
-    payment?.email,
-    payment?.customer_email,
-    payment?.user_email,
-  ].map(normalizedIdentifier).filter(Boolean);
-
+  const candidates = [payment?.identifier,payment?.email,payment?.customer_email,payment?.user_email].map(normalizedIdentifier).filter(Boolean);
   if (email && candidates.includes(email)) return true;
   if (username && candidates.includes(username)) return true;
   return false;
 }
 
 function findDemonVip(subscriptions) {
-  return subscriptions.find((subscription) => {
-    const name = normalizedName(subscription?.name);
-    return name.includes(DEMON_VIP_NAME) && isActiveSubscription(subscription);
-  }) || null;
+  return subscriptions.find((subscription) => normalizedName(subscription?.name).includes(DEMON_VIP_NAME) && isActiveSubscription(subscription)) || null;
 }
 
 function isPaidStatus(value) {
-  return ['paid', 'active', 'processed', 'complete', 'completed', 'succeeded', 'success']
-    .includes(String(value || '').trim().toLowerCase());
+  return ['paid','active','processed','complete','completed','succeeded','success'].includes(String(value || '').trim().toLowerCase());
 }
 
 function findTestDemonVipPayment(payments, user) {
   const now = Date.now();
-
   return payments.find((payment) => {
     if (!paymentBelongsToUser(payment, user)) return false;
     if (String(payment?.mode || '').trim().toLowerCase() !== 'test') return false;
     if (!isPaidStatus(payment?.status)) return false;
-
-    const cartText = normalizedName(
-      typeof payment?.cart === 'string'
-        ? payment.cart
-        : payment?.cart?.name ?? payment?.product_name ?? payment?.name ?? '',
-    );
+    const cartText = normalizedName(typeof payment?.cart === 'string' ? payment.cart : payment?.cart?.name ?? payment?.product_name ?? payment?.name ?? '');
     if (!cartText.includes(DEMON_VIP_NAME)) return false;
-
     const paidAt = unixToMs(payment?.date ?? payment?.created_at ?? payment?.start_date);
-    if (!paidAt) return false;
-
-    return paidAt + DEMON_VIP_DURATION_MS > now;
+    return Boolean(paidAt && paidAt + DEMON_VIP_DURATION_MS > now);
   }) || null;
-}
-
-function logVipDiagnostic(user, subscriptions, storePayments) {
-  const safeSubscriptions = subscriptions.slice(0, 10).map((s) => ({
-    id: s?.id ?? null,
-    name: s?.name ?? null,
-    status: s?.status ?? null,
-    onetime: Boolean(s?.onetime),
-    start_date: s?.start_date ?? null,
-    expire_date: s?.expire_date ?? null,
-    next_payment: s?.next_payment ?? null,
-    unsubscribed: Boolean(s?.unsubscribed),
-  }));
-  const safePayments = storePayments.slice(0, 10).map((p) => ({
-    id: p?.id ?? null,
-    mode: p?.mode ?? null,
-    status: p?.status ?? null,
-    cart: p?.cart ?? null,
-    sub_id: p?.sub_id ?? null,
-    date: p?.date ?? null,
-    amount: p?.amount ?? null,
-    currency: p?.currency ?? null,
-    gateway: p?.gateway ?? null,
-    identifier_kind: p?.identifier ? (String(p.identifier).includes('@') ? 'email_like' : 'other') : null,
-    belongs_to_authenticated_user: paymentBelongsToUser(p, user),
-  }));
-
-  console.log('[DEMON_VIP_DIAGNOSTIC]', JSON.stringify({
-    tip4serv_user_id: Number(user?.id || 0),
-    subscription_count: subscriptions.length,
-    subscriptions: safeSubscriptions,
-    raw_store_payment_count: storePayments.length,
-    store_payments: safePayments,
-  }));
 }
 
 async function getVerifiedVip(token, user) {
   if (OWNER_VIP_USER_IDS.has(Number(user?.id))) {
-    return {
-      source: 'owner_override',
-      vip: {
-        id: Number(user.id),
-        status: 'active',
-        onetime: false,
-        unsubscribed: false,
-      },
-      expiresAt: 0,
-      testMode: false,
-      ownerOverride: true,
-    };
+    return { source: 'owner_override', vip: { id: Number(user.id), status: 'active', onetime: false, unsubscribed: false }, expiresAt: 0, testMode: false, ownerOverride: true };
   }
 
   const subscriptions = await loadUserSubscriptions(token);
   const liveVip = findDemonVip(subscriptions);
-  if (liveVip) {
-    return {
-      source: 'subscription',
-      vip: liveVip,
-      expiresAt: getMembershipExpiresAt(liveVip),
-      testMode: false,
-    };
-  }
+  if (liveVip) return { source: 'subscription', vip: liveVip, expiresAt: getMembershipExpiresAt(liveVip), testMode: false };
 
-  // Test-only fallback. Tip4Serv's customer endpoints omit test purchases, and
-  // the store payment identifier filter can omit valid test rows. Fetch only the
-  // latest store payment page privately, then match the authenticated customer
-  // server-side. Explicit mode="test" is still mandatory, so this cannot grant
-  // a production VIP entitlement from an unpaid/live transaction.
   const storePayments = await loadRecentStorePayments();
-  logVipDiagnostic(user, subscriptions, storePayments);
   const testPayment = findTestDemonVipPayment(storePayments, user);
   if (!testPayment) return null;
-
   const paidAt = unixToMs(testPayment?.date ?? testPayment?.created_at ?? testPayment?.start_date);
-  return {
-    source: 'test_store_payment',
-    vip: testPayment,
-    expiresAt: paidAt + DEMON_VIP_DURATION_MS,
-    testMode: true,
-  };
+  return { source: 'test_store_payment', vip: testPayment, expiresAt: paidAt + DEMON_VIP_DURATION_MS, testMode: true };
 }
 
 router.get('/vip-status', requireTip4ServUser, async (req, res) => {
@@ -308,37 +168,15 @@ router.get('/vip-status', requireTip4ServUser, async (req, res) => {
     const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser);
     const vip = entitlement?.vip || null;
     const expiresAt = entitlement?.expiresAt || 0;
-
     res.json({
       active: Boolean(entitlement),
       name: DEMON_VIP_NAME,
       discount_percent: entitlement ? DEMON_VIP_DISCOUNT_PERCENT : 0,
       mode: entitlement?.ownerOverride ? 'owner' : entitlement?.testMode ? 'test' : entitlement ? 'live' : null,
-      membership_type: entitlement
-        ? entitlement.ownerOverride
-          ? 'owner'
-          : entitlement.testMode
-            ? 'test_one_time'
-            : vip?.onetime
-              ? 'one_time'
-              : 'recurring'
-        : null,
+      membership_type: entitlement ? entitlement.ownerOverride ? 'owner' : entitlement.testMode ? 'test_one_time' : vip?.onetime ? 'one_time' : 'recurring' : null,
       active_until: expiresAt ? new Date(expiresAt).toISOString() : null,
-      subscription: entitlement && !entitlement.testMode && !entitlement.ownerOverride ? {
-        id: vip.id ?? null,
-        status: vip.status ?? null,
-        onetime: Boolean(vip.onetime),
-        start_date: vip.start_date ?? null,
-        next_payment: vip.next_payment ?? null,
-        expire_date: vip.expire_date ?? null,
-        unsubscribed: Boolean(vip.unsubscribed),
-      } : null,
-      test_payment: entitlement?.testMode ? {
-        id: vip.id ?? null,
-        status: vip.status ?? null,
-        mode: vip.mode ?? null,
-        date: vip.date ?? vip.created_at ?? null,
-      } : null,
+      subscription: entitlement && !entitlement.testMode && !entitlement.ownerOverride ? { id: vip.id ?? null, status: vip.status ?? null, onetime: Boolean(vip.onetime), start_date: vip.start_date ?? null, next_payment: vip.next_payment ?? null, expire_date: vip.expire_date ?? null, unsubscribed: Boolean(vip.unsubscribed) } : null,
+      test_payment: entitlement?.testMode ? { id: vip.id ?? null, status: vip.status ?? null, mode: vip.mode ?? null, date: vip.date ?? vip.created_at ?? null } : null,
       verified_at: new Date().toISOString(),
     });
   } catch (err) {
@@ -351,33 +189,17 @@ router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
     const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser);
     if (!entitlement) return jsonError(res, 403, 'An active DEMON VIP membership is required for this discount.');
 
-    const productIds = Array.from(new Set(
-      (Array.isArray(req.body?.product_ids) ? req.body.product_ids : [])
-        .map((value) => Number(value))
-        .filter((value) => Number.isInteger(value) && value > 0),
-    ));
+    const productIds = Array.from(new Set((Array.isArray(req.body?.product_ids) ? req.body.product_ids : []).map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0)));
     if (!productIds.length) return jsonError(res, 400, 'At least one valid product is required.');
 
     const apiKey = await loadStoreApiKey();
     if (!apiKey) return jsonError(res, 500, 'Tip4Serv store API key is not configured.');
 
     const code = `DAVIP-${randomBytes(8).toString('hex').toUpperCase()}`;
-    const expiration = Date.now() + VIP_COUPON_TTL_MS;
     const couponResponse = await fetch(`${TIP4SERV_BASE}/store/discount/coupon`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        code,
-        type: 'percentage',
-        value: DEMON_VIP_DISCOUNT_PERCENT,
-        limit: 1,
-        expiration,
-        accepted_products: productIds,
-      }),
+      headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, type: 'percentage', value: DEMON_VIP_DISCOUNT_PERCENT, limit: 1, accepted_products: productIds }),
     });
     const couponData = await couponResponse.json().catch(() => ({}));
     if (!couponResponse.ok || !couponData?.code) {
@@ -388,14 +210,13 @@ router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
     await getPool().execute(
       `INSERT INTO vip_checkout_coupons
         (tip4serv_user_id, tip4serv_coupon_id, code, discount_percent, product_ids, expires_at)
-       VALUES (:userId, :couponId, :code, :discountPercent, :productIds, FROM_UNIXTIME(:expiresSeconds))`,
+       VALUES (:userId, :couponId, :code, :discountPercent, :productIds, NULL)`,
       {
         userId: Number(req.tip4servUser.id),
         couponId: couponData.id ? Number(couponData.id) : null,
         code: String(couponData.code),
         discountPercent: DEMON_VIP_DISCOUNT_PERCENT,
         productIds: JSON.stringify(productIds),
-        expiresSeconds: Math.floor(expiration / 1000),
       },
     );
 
@@ -404,7 +225,7 @@ router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
       mode: entitlement.ownerOverride ? 'owner' : entitlement.testMode ? 'test' : 'live',
       discount_percent: DEMON_VIP_DISCOUNT_PERCENT,
       code: String(couponData.code),
-      expires_at: new Date(expiration).toISOString(),
+      expires_at: null,
       product_ids: productIds,
     });
   } catch (err) {
@@ -434,7 +255,6 @@ router.put('/identity', requireTip4ServUser, async (req, res) => {
   try {
     const user = req.tip4servUser;
     await ensureProfile(user);
-
     const discordId = req.body?.discord_id === undefined ? undefined : String(req.body.discord_id || '').trim() || null;
     const discordUsername = req.body?.discord_username === undefined ? undefined : String(req.body.discord_username || '').trim() || null;
     const discordGlobalName = req.body?.discord_global_name === undefined ? undefined : String(req.body.discord_global_name || '').trim() || null;
@@ -443,19 +263,13 @@ router.put('/identity', requireTip4ServUser, async (req, res) => {
 
     const updates = [];
     const params = { id: Number(user.id) };
-
     if (discordId !== undefined) { updates.push('discord_id = :discordId'); params.discordId = discordId; }
     if (discordUsername !== undefined) { updates.push('discord_username = :discordUsername'); params.discordUsername = discordUsername; }
     if (discordGlobalName !== undefined) { updates.push('discord_global_name = :discordGlobalName'); params.discordGlobalName = discordGlobalName; }
     if (eosId !== undefined) { updates.push('eos_id = :eosId'); params.eosId = eosId; }
     if (serverKey !== undefined) { updates.push('server_key = :serverKey'); params.serverKey = serverKey; }
 
-    if (updates.length) {
-      await getPool().execute(
-        `UPDATE player_identity_profiles SET ${updates.join(', ')} WHERE tip4serv_user_id = :id`,
-        params,
-      );
-    }
+    if (updates.length) await getPool().execute(`UPDATE player_identity_profiles SET ${updates.join(', ')} WHERE tip4serv_user_id = :id`, params);
 
     const [rows] = await getPool().execute(
       `SELECT tip4serv_user_id, tip4serv_username, email,
@@ -469,9 +283,7 @@ router.put('/identity', requireTip4ServUser, async (req, res) => {
     res.json({ profile: rows[0] || null });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unable to save player identity.';
-    if (message.includes('Duplicate entry') && message.includes('discord_id')) {
-      return jsonError(res, 409, 'That Discord account is already linked to another DemonArk account.');
-    }
+    if (message.includes('Duplicate entry') && message.includes('discord_id')) return jsonError(res, 409, 'That Discord account is already linked to another DemonArk account.');
     jsonError(res, 500, message);
   }
 });
