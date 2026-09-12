@@ -230,7 +230,10 @@ header nav button {
 @keyframes da-heat-waver { from{transform:translate3d(-1%,2%,0) skewX(-.4deg) scaleX(1.02)} to{transform:translate3d(1%,-1%,0) skewX(.7deg) scaleX(.985)} }
 
 @media (max-width: 767px) {
-  .da-home-bg,
+  /* iPhone/WebKit fallback: no fixed or transformed full-screen background image.
+     The three content sections become normal-flow background scenes instead. */
+  .da-home-bg-frame { display: none !important; }
+
   .da-home-shade,
   .da-fire-glow,
   .da-smoke,
@@ -244,11 +247,79 @@ header nav button {
     height: 100lvh;
   }
 
-  .da-home-bg {
-    background-position: 58% center;
-    transform-origin: 62% 45%;
-    transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.045));
-    will-change: transform;
+  .da-home > .flex.max-w-7xl,
+  .da-home > .max-w-7xl:not(.flex),
+  .da-home > .max-w-5xl {
+    isolation: isolate;
+  }
+
+  .da-home > .flex.max-w-7xl::before,
+  .da-home > .max-w-7xl:not(.flex)::before,
+  .da-home > .max-w-5xl::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 100vw;
+    pointer-events: none;
+    z-index: -2;
+    background-image: url('/demonarkbackg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .da-home > .flex.max-w-7xl::after,
+  .da-home > .max-w-7xl:not(.flex)::after,
+  .da-home > .max-w-5xl::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 100vw;
+    pointer-events: none;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(9,9,9,.72) 0%, rgba(9,9,9,.08) 18%, rgba(9,9,9,.06) 78%, rgba(9,9,9,.78) 100%);
+  }
+
+  /* Hero scene */
+  .da-home > .flex.max-w-7xl::before {
+    top: -80px;
+    bottom: -150px;
+    transform: translateX(-50%);
+    background-position: 58% 50%;
+  }
+  .da-home > .flex.max-w-7xl::after {
+    top: -80px;
+    bottom: -150px;
+    transform: translateX(-50%);
+  }
+
+  /* Featured/category scene overlaps the hero scene so there is no hard seam. */
+  .da-home > .max-w-7xl:not(.flex)::before {
+    top: -170px;
+    bottom: -180px;
+    transform: translateX(-50%);
+    background-position: 68% 56%;
+    background-size: 138% auto;
+  }
+  .da-home > .max-w-7xl:not(.flex)::after {
+    top: -170px;
+    bottom: -180px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(9,9,9,.82) 0%, rgba(9,9,9,.18) 15%, rgba(9,9,9,.06) 78%, rgba(9,9,9,.82) 100%);
+  }
+
+  /* Terms scene continues the normal-flow illusion farther down the page. */
+  .da-home > .max-w-5xl::before {
+    top: -180px;
+    bottom: -80px;
+    transform: translateX(-50%);
+    background-position: 62% 70%;
+    background-size: 128% auto;
+  }
+  .da-home > .max-w-5xl::after {
+    top: -180px;
+    bottom: -80px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(9,9,9,.82) 0%, rgba(9,9,9,.15) 18%, rgba(9,9,9,.16) 76%, rgba(9,9,9,.92) 100%);
   }
 
   /* Keep ember planes oversized on mobile so transform animation never exposes edges. */
@@ -265,19 +336,6 @@ header nav button {
   .da-embers-near { opacity:.25; filter: blur(.25px) drop-shadow(0 0 8px rgba(255,103,50,.66)); }
   .da-embers-mid { filter: drop-shadow(0 0 5px rgba(255,94,46,.56)); }
   .da-heat-haze { opacity:.08; }
-
-  /* Option 2: make the two static mobile scenes visually distinct.
-     Only opacity changes at runtime; neither layer moves or zooms while scrolling. */
-  .da-home-bg-frame .da-home-bg:nth-child(1) {
-    background-size: cover !important;
-    background-position: 58% center !important;
-  }
-
-  .da-home-bg-frame .da-home-bg:nth-child(2) {
-    background-size: 150% auto !important;
-    background-position: 78% 58% !important;
-    transition: opacity 420ms ease-out !important;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
