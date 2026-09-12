@@ -265,6 +265,19 @@ header nav button {
   .da-embers-near { opacity:.25; filter: blur(.25px) drop-shadow(0 0 8px rgba(255,103,50,.66)); }
   .da-embers-mid { filter: drop-shadow(0 0 5px rgba(255,94,46,.56)); }
   .da-heat-haze { opacity:.08; }
+
+  /* Option 2: make the two static mobile scenes visually distinct.
+     Only opacity changes at runtime; neither layer moves or zooms while scrolling. */
+  .da-home-bg-frame .da-home-bg:nth-child(1) {
+    background-size: cover !important;
+    background-position: 58% center !important;
+  }
+
+  .da-home-bg-frame .da-home-bg:nth-child(2) {
+    background-size: 150% auto !important;
+    background-position: 78% 58% !important;
+    transition: opacity 420ms ease-out !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
