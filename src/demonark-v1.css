@@ -85,10 +85,22 @@ header nav button {
     radial-gradient(circle at 50% 28%, rgba(239, 68, 68, 0.08), transparent 48%);
 }
 
+/* Oversized ember planes move as composited layers instead of repainting
+   background-position every frame. This keeps scroll/parallax smooth on mobile. */
 .da-embers {
   z-index: -5;
+  top: -38vh;
+  right: -12vw;
+  bottom: auto;
+  left: -12vw;
+  width: 124vw;
+  height: 176vh;
   background-repeat: repeat;
-  will-change: transform, background-position, opacity;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0,0,0);
+  contain: paint;
 }
 
 .da-embers-far {
@@ -111,7 +123,7 @@ header nav button {
     radial-gradient(circle, rgba(105,92,86,.54) 0 1.35px, rgba(50,45,43,.28) 1.45px 1.9px, transparent 2.35px);
   background-size: 132px 164px, 181px 224px, 157px 196px;
   background-position: 26px 80px, 104px 18px, 63px 126px;
-  filter: drop-shadow(0 0 6px rgba(255,94,46,.62)) drop-shadow(0 0 12px rgba(239,68,68,.22));
+  filter: drop-shadow(0 0 6px rgba(255,94,46,.62));
   animation: da-embers-mid-rise 15s linear infinite;
 }
 
@@ -124,7 +136,7 @@ header nav button {
     radial-gradient(circle, rgba(92,82,78,.62) 0 2px, rgba(39,36,35,.36) 2.1px 2.8px, transparent 3.5px);
   background-size: 252px 304px, 326px 388px, 286px 346px;
   background-position: 30px 20px, 160px 140px, 93px 218px;
-  filter: blur(.45px) drop-shadow(0 0 9px rgba(255,103,50,.74)) drop-shadow(0 0 18px rgba(239,68,68,.24));
+  filter: blur(.35px) drop-shadow(0 0 10px rgba(255,103,50,.72));
   animation: da-embers-near-rise 10s linear infinite, da-ember-flicker 2.8s ease-in-out infinite alternate;
 }
 
@@ -195,10 +207,25 @@ header nav button {
 @keyframes da-fire-pulse { 0%,100%{opacity:.58;filter:brightness(.92)} 45%{opacity:.9;filter:brightness(1.14)} 65%{opacity:.7;filter:brightness(1.02)} }
 @keyframes da-smoke-drift-a { from{transform:translate3d(-5%,2%,0) scale(1.08);opacity:.20} to{transform:translate3d(7%,-4%,0) scale(1.18);opacity:.34} }
 @keyframes da-smoke-drift-b { from{transform:translate3d(6%,-2%,0) scale(1.04);opacity:.14} to{transform:translate3d(-8%,5%,0) scale(1.16);opacity:.25} }
-@keyframes da-embers-far-rise { from{background-position:12px 120px,68px 210px,91px 170px} to{background-position:38px -320px,42px -470px,116px -390px} }
-@keyframes da-embers-mid-rise { from{background-position:26px 180px,104px 260px,63px 220px} to{background-position:-18px -510px,148px -690px,94px -560px} }
-@keyframes da-embers-near-rise { from{background-position:30px 280px,160px 420px,93px 350px;transform:translateX(0)} to{background-position:74px -760px,106px -940px,142px -820px;transform:translateX(-12px)} }
-@keyframes da-ember-flicker { 0%{opacity:.28;filter:blur(.45px) drop-shadow(0 0 7px rgba(255,103,50,.60)) drop-shadow(0 0 13px rgba(239,68,68,.16))} 48%{opacity:.38;filter:blur(.35px) drop-shadow(0 0 12px rgba(255,127,52,.88)) drop-shadow(0 0 22px rgba(239,68,68,.30))} 100%{opacity:.31;filter:blur(.5px) drop-shadow(0 0 8px rgba(255,90,42,.68)) drop-shadow(0 0 16px rgba(185,28,28,.22))} }
+
+/* Transform-only particle motion = compositor-friendly and much smoother during scroll. */
+@keyframes da-embers-far-rise {
+  from { transform: translate3d(-1.5vw, 24vh, 0); }
+  to   { transform: translate3d(1.5vw, -24vh, 0); }
+}
+@keyframes da-embers-mid-rise {
+  from { transform: translate3d(1.8vw, 30vh, 0); }
+  to   { transform: translate3d(-2vw, -30vh, 0); }
+}
+@keyframes da-embers-near-rise {
+  from { transform: translate3d(-1vw, 34vh, 0); }
+  to   { transform: translate3d(2.2vw, -34vh, 0); }
+}
+@keyframes da-ember-flicker {
+  0%   { opacity:.29; }
+  48%  { opacity:.38; }
+  100% { opacity:.32; }
+}
 @keyframes da-red-flare { 0%,66%,100%{opacity:0} 70%{opacity:.18} 73%{opacity:.035} 76%{opacity:.12} 80%{opacity:0} }
 @keyframes da-heat-waver { from{transform:translate3d(-1%,2%,0) skewX(-.4deg) scaleX(1.02)} to{transform:translate3d(1%,-1%,0) skewX(.7deg) scaleX(.985)} }
 
@@ -207,7 +234,6 @@ header nav button {
   .da-home-shade,
   .da-fire-glow,
   .da-smoke,
-  .da-embers,
   .da-red-flare,
   .da-pointer-glow {
     top: 0;
@@ -225,9 +251,19 @@ header nav button {
     will-change: transform;
   }
 
+  /* Keep ember planes oversized on mobile so transform animation never exposes edges. */
+  .da-embers {
+    top: -36lvh;
+    right: -14vw;
+    left: -14vw;
+    width: 128vw;
+    height: 172lvh;
+  }
+
   .da-pointer-glow { display:none; }
   .da-smoke { filter:blur(34px); }
-  .da-embers-near { opacity:.25; }
+  .da-embers-near { opacity:.25; filter: blur(.25px) drop-shadow(0 0 8px rgba(255,103,50,.66)); }
+  .da-embers-mid { filter: drop-shadow(0 0 5px rgba(255,94,46,.56)); }
   .da-heat-haze { opacity:.08; }
 }
 
