@@ -18,15 +18,26 @@ header nav button {
   background: #090909;
 }
 
-.da-home-bg {
+.da-home-bg,
+.da-home-shade,
+.da-fire-glow,
+.da-smoke,
+.da-embers,
+.da-red-flare,
+.da-heat-haze,
+.da-pointer-glow {
   position: fixed;
   inset: 0;
-  z-index: -3;
+  pointer-events: none;
+}
+
+.da-home-bg {
+  z-index: -9;
   background-image: url('/demonarkbackg.png');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: cover;
-  transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.015));
+  transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.025));
   transform-origin: 58% 48%;
   will-change: transform;
   backface-visibility: hidden;
@@ -34,14 +45,111 @@ header nav button {
   contain: paint;
 }
 
+.da-fire-glow {
+  z-index: -8;
+  background:
+    radial-gradient(circle at 48% 22%, rgba(239,68,68,.17), transparent 34%),
+    radial-gradient(circle at 16% 72%, rgba(185,28,28,.14), transparent 28%),
+    radial-gradient(circle at 84% 62%, rgba(248,113,113,.09), transparent 25%);
+  mix-blend-mode: screen;
+  animation: da-fire-pulse 6.5s ease-in-out infinite;
+}
+
+.da-smoke {
+  z-index: -7;
+  opacity: .28;
+  filter: blur(48px);
+  will-change: transform, opacity;
+}
+
+.da-smoke-a {
+  background:
+    radial-gradient(ellipse at 20% 35%, rgba(35,35,38,.55), transparent 43%),
+    radial-gradient(ellipse at 70% 58%, rgba(55,18,22,.38), transparent 46%),
+    radial-gradient(ellipse at 45% 85%, rgba(24,24,27,.6), transparent 40%);
+  animation: da-smoke-drift-a 22s ease-in-out infinite alternate;
+}
+
+.da-smoke-b {
+  opacity: .20;
+  background:
+    radial-gradient(ellipse at 78% 18%, rgba(35,35,38,.48), transparent 40%),
+    radial-gradient(ellipse at 32% 66%, rgba(90,20,24,.28), transparent 45%);
+  animation: da-smoke-drift-b 28s ease-in-out infinite alternate;
+}
+
 .da-home-shade {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
+  z-index: -6;
   background:
     linear-gradient(180deg, rgba(4, 4, 5, 0.10) 0%, rgba(5, 5, 6, 0.25) 38%, rgba(5, 5, 6, 0.55) 72%, rgba(8, 8, 9, 0.90) 100%),
     radial-gradient(circle at 50% 28%, rgba(239, 68, 68, 0.08), transparent 48%);
+}
+
+.da-embers {
+  z-index: -5;
+  background-repeat: repeat;
+  will-change: transform, background-position, opacity;
+}
+
+.da-embers-far {
+  opacity: .25;
+  background-image:
+    radial-gradient(circle, rgba(255,118,82,.58) 0 1px, transparent 1.7px),
+    radial-gradient(circle, rgba(239,68,68,.40) 0 1px, transparent 1.5px);
+  background-size: 86px 112px, 143px 171px;
+  background-position: 12px 34px, 68px 91px;
+  animation: da-embers-far-rise 22s linear infinite;
+}
+
+.da-embers-mid {
+  opacity: .38;
+  filter: drop-shadow(0 0 4px rgba(239,68,68,.55));
+  background-image:
+    radial-gradient(circle, rgba(255,150,86,.72) 0 1.5px, transparent 2px),
+    radial-gradient(circle, rgba(248,113,113,.58) 0 1.2px, transparent 1.9px);
+  background-size: 128px 154px, 173px 212px;
+  background-position: 26px 80px, 104px 18px;
+  animation: da-embers-mid-rise 15s linear infinite;
+}
+
+.da-embers-near {
+  z-index: 8;
+  opacity: .22;
+  filter: blur(.8px) drop-shadow(0 0 8px rgba(255,90,50,.7));
+  background-image:
+    radial-gradient(circle, rgba(255,174,96,.78) 0 2.2px, transparent 3px),
+    radial-gradient(circle, rgba(239,68,68,.62) 0 2px, transparent 2.8px);
+  background-size: 240px 290px, 310px 370px;
+  background-position: 30px 20px, 160px 140px;
+  animation: da-embers-near-rise 10s linear infinite;
+}
+
+.da-red-flare {
+  z-index: -4;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 35%, rgba(255,70,70,.18), rgba(127,29,29,.07) 30%, transparent 62%);
+  mix-blend-mode: screen;
+  animation: da-red-flare 16s ease-in-out infinite;
+}
+
+.da-heat-haze {
+  z-index: -3;
+  top: 58%;
+  bottom: -10%;
+  opacity: .12;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 36px, rgba(255,110,75,.06) 38px 40px, transparent 42px 78px),
+    linear-gradient(180deg, transparent, rgba(255,90,60,.10));
+  filter: blur(8px);
+  transform-origin: bottom center;
+  animation: da-heat-waver 5.4s ease-in-out infinite alternate;
+}
+
+.da-pointer-glow {
+  z-index: -2;
+  opacity: .55;
+  background: radial-gradient(circle 250px at var(--da-pointer-x, 50%) var(--da-pointer-y, 35%), rgba(239,68,68,.13), rgba(239,68,68,.045) 32%, transparent 70%);
+  transition: opacity .25s ease;
 }
 
 .da-panel {
@@ -80,10 +188,23 @@ header nav button {
 @keyframes da-action-breathe { 0%,100%{scale:1;box-shadow:0 12px 38px rgba(127,29,29,.24);filter:brightness(1)} 50%{scale:1.045;box-shadow:0 18px 58px rgba(239,68,68,.48);filter:brightness(1.08)} }
 @keyframes da-action-sheen { 0%,60%{transform:translateX(-145%);opacity:0} 68%{opacity:1} 86%{transform:translateX(145%);opacity:1} 94%,100%{transform:translateX(145%);opacity:0} }
 @keyframes da-slide-in { from{opacity:0;transform:translateY(16px) scale(.985)} to{opacity:1;transform:none} }
+@keyframes da-fire-pulse { 0%,100%{opacity:.58;filter:brightness(.92)} 45%{opacity:.9;filter:brightness(1.14)} 65%{opacity:.7;filter:brightness(1.02)} }
+@keyframes da-smoke-drift-a { from{transform:translate3d(-5%,2%,0) scale(1.08);opacity:.20} to{transform:translate3d(7%,-4%,0) scale(1.18);opacity:.34} }
+@keyframes da-smoke-drift-b { from{transform:translate3d(6%,-2%,0) scale(1.04);opacity:.14} to{transform:translate3d(-8%,5%,0) scale(1.16);opacity:.25} }
+@keyframes da-embers-far-rise { from{background-position:12px 120px,68px 210px} to{background-position:38px -320px,42px -470px} }
+@keyframes da-embers-mid-rise { from{background-position:26px 180px,104px 260px} to{background-position:-18px -510px,148px -690px} }
+@keyframes da-embers-near-rise { from{background-position:30px 280px,160px 420px;transform:translateX(0)} to{background-position:74px -760px,106px -940px;transform:translateX(-12px)} }
+@keyframes da-red-flare { 0%,66%,100%{opacity:0} 70%{opacity:.18} 73%{opacity:.035} 76%{opacity:.12} 80%{opacity:0} }
+@keyframes da-heat-waver { from{transform:translate3d(-1%,2%,0) skewX(-.4deg) scaleX(1.02)} to{transform:translate3d(1%,-1%,0) skewX(.7deg) scaleX(.985)} }
 
 @media (max-width: 767px) {
   .da-home-bg,
-  .da-home-shade {
+  .da-home-shade,
+  .da-fire-glow,
+  .da-smoke,
+  .da-embers,
+  .da-red-flare,
+  .da-pointer-glow {
     top: 0;
     right: 0;
     bottom: auto;
@@ -95,16 +216,26 @@ header nav button {
   .da-home-bg {
     background-position: 58% center;
     transform-origin: 62% 45%;
-    transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.035));
+    transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.045));
     will-change: transform;
   }
+
+  .da-pointer-glow { display:none; }
+  .da-smoke { filter:blur(34px); }
+  .da-embers-near { opacity:.16; }
+  .da-heat-haze { opacity:.08; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .da-home-bg { transform: scale(1.015); }
+  .da-home-bg { transform: scale(1.025); }
   .da-feature-slide,
   .da-logo-pulse,
   .da-logo-sheen-copy,
   .da-action-pulse,
-  .da-action-pulse::after { animation: none; }
+  .da-action-pulse::after,
+  .da-fire-glow,
+  .da-smoke,
+  .da-embers,
+  .da-red-flare,
+  .da-heat-haze { animation: none; }
 }
