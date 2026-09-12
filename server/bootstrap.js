@@ -6,6 +6,24 @@ import mysql from 'mysql2/promise';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+function validateProductionEnvironment() {
+  if (process.env.NODE_ENV !== 'production' && !process.env.RAILWAY_ENVIRONMENT) return;
+
+  const required = [
+    'ADMIN_JWT_SECRET',
+    'TIP4SERV_API_KEY',
+    'MYSQL_HOST',
+    'MYSQL_USER',
+    'MYSQL_PASSWORD',
+    'MYSQL_DATABASE',
+  ];
+  const missing = required.filter((name) => !String(process.env[name] || '').trim());
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required production environment variable(s): ${missing.join(', ')}`);
+  }
+}
+
 async function initializeSchema() {
   const pool = mysql.createPool({
     host: process.env.MYSQL_HOST || '127.0.0.1',
@@ -41,6 +59,7 @@ async function initializeSchema() {
 }
 
 try {
+  validateProductionEnvironment();
   await initializeSchema();
   await import('./index.js');
 } catch (error) {
