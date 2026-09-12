@@ -81,7 +81,21 @@ export default function ProductsPage() {
         <div className="mb-5 -mx-4 px-4 overflow-x-auto scrollbar-hide">
           <div className="flex gap-2 min-w-max pb-1">
             <button onClick={() => setCategory(null)} className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold whitespace-nowrap border transition-all ${!activeSlug ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/20' : 'bg-[#19191b] border-white/10 text-zinc-300 hover:border-red-500/40 hover:text-white'}`}><LayoutGrid className="w-4 h-4" /> All</button>
-            {categories.map((cat) => { const Icon = getCategoryIcon(cat.slug || cat.name); return <button key={cat.id} onClick={() => setCategory(cat.slug)} className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold whitespace-nowrap border transition-all ${activeSlug === cat.slug ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/20' : 'bg-[#19191b] border-white/10 text-zinc-300 hover:border-red-500/40 hover:text-white'}`}><Icon className="w-4 h-4" />{cat.name}</button>; })}
+            {categories.map((cat) => {
+              const Icon = getCategoryIcon(cat.slug || cat.name);
+              return (
+                <button key={cat.id} onClick={() => setCategory(cat.slug)} className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-bold whitespace-nowrap border transition-all ${activeSlug === cat.slug ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/20' : 'bg-[#19191b] border-white/10 text-zinc-300 hover:border-red-500/40 hover:text-white'}`}>
+                  {cat.image ? (
+                    <span className="h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-black/30 shadow-sm">
+                      <img src={cat.image} alt="" className="h-full w-full object-cover" loading="eager" decoding="async" />
+                    </span>
+                  ) : (
+                    <Icon className="w-4 h-4" />
+                  )}
+                  {cat.name}
+                </button>
+              );
+            })}
           </div>
         </div>
 
