@@ -18,7 +18,39 @@ header nav button {
   background: #090909;
 }
 
+.da-home-bg-frame {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -9;
+  pointer-events: none;
+  contain: strict;
+  background: #090909;
+}
+
 .da-home-bg,
+.da-home-shade,
+.da-fire-glow,
+.da-smoke,
+.da-embers,
+.da-red-flare,
+.da-heat-haze,
+.da-pointer-glow {
+  pointer-events: none;
+}
+
+.da-home-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/demonarkbackg.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: none;
+  contain: paint;
+}
+
 .da-home-shade,
 .da-fire-glow,
 .da-smoke,
@@ -28,29 +60,14 @@ header nav button {
 .da-pointer-glow {
   position: fixed;
   inset: 0;
-  pointer-events: none;
-}
-
-.da-home-bg {
-  z-index: -9;
-  background-image: url('/demonarkbackg.png');
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  transform: translate3d(0, var(--da-bg-shift, 0px), 0) scale(var(--da-bg-scale, 1.025));
-  transform-origin: 58% 48%;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  contain: paint;
 }
 
 .da-fire-glow {
   z-index: -8;
   background:
-    radial-gradient(circle at 48% 22%, rgba(239,68,68,.17), transparent 34%),
-    radial-gradient(circle at 16% 72%, rgba(185,28,28,.14), transparent 28%),
-    radial-gradient(circle at 84% 62%, rgba(248,113,113,.09), transparent 25%);
+    radial-gradient(circle at 48% 22%, rgba(239,68,68,.19), transparent 34%),
+    radial-gradient(circle at 16% 72%, rgba(185,28,28,.16), transparent 28%),
+    radial-gradient(circle at 84% 62%, rgba(248,113,113,.10), transparent 25%);
   mix-blend-mode: screen;
   animation: da-fire-pulse 6.5s ease-in-out infinite;
 }
@@ -81,12 +98,12 @@ header nav button {
 .da-home-shade {
   z-index: -6;
   background:
-    linear-gradient(180deg, rgba(4, 4, 5, 0.10) 0%, rgba(5, 5, 6, 0.25) 38%, rgba(5, 5, 6, 0.55) 72%, rgba(8, 8, 9, 0.90) 100%),
-    radial-gradient(circle at 50% 28%, rgba(239, 68, 68, 0.08), transparent 48%);
+    linear-gradient(180deg, rgba(4,4,5,.12) 0%, rgba(5,5,6,.24) 36%, rgba(5,5,6,.56) 74%, rgba(8,8,9,.92) 100%),
+    radial-gradient(circle at 50% 28%, rgba(239,68,68,.09), transparent 48%),
+    radial-gradient(ellipse at center, transparent 44%, rgba(0,0,0,.35) 100%);
 }
 
-/* Oversized ember planes move as composited layers instead of repainting
-   background-position every frame. This keeps scroll/parallax smooth on mobile. */
+/* Oversized ember planes move as composited layers instead of repainting background-position. */
 .da-embers {
   z-index: -5;
   top: -38vh;
@@ -208,7 +225,6 @@ header nav button {
 @keyframes da-smoke-drift-a { from{transform:translate3d(-5%,2%,0) scale(1.08);opacity:.20} to{transform:translate3d(7%,-4%,0) scale(1.18);opacity:.34} }
 @keyframes da-smoke-drift-b { from{transform:translate3d(6%,-2%,0) scale(1.04);opacity:.14} to{transform:translate3d(-8%,5%,0) scale(1.16);opacity:.25} }
 
-/* Transform-only particle motion = compositor-friendly and much smoother during scroll. */
 @keyframes da-embers-far-rise {
   from { transform: translate3d(-1.5vw, 24vh, 0); }
   to   { transform: translate3d(1.5vw, -24vh, 0); }
@@ -230,9 +246,15 @@ header nav button {
 @keyframes da-heat-waver { from{transform:translate3d(-1%,2%,0) skewX(-.4deg) scaleX(1.02)} to{transform:translate3d(1%,-1%,0) skewX(.7deg) scaleX(.985)} }
 
 @media (max-width: 767px) {
-  /* iPhone/WebKit fallback: no fixed or transformed full-screen background image.
-     The three content sections become normal-flow background scenes instead. */
-  .da-home-bg-frame { display: none !important; }
+  .da-home-bg-frame {
+    display: block !important;
+  }
+
+  .da-home-bg {
+    background-position: 58% center;
+    background-size: cover;
+    transform: none !important;
+  }
 
   .da-home-shade,
   .da-fire-glow,
@@ -247,79 +269,34 @@ header nav button {
     height: 100lvh;
   }
 
-  .da-home > .flex.max-w-7xl,
-  .da-home > .max-w-7xl:not(.flex),
-  .da-home > .max-w-5xl {
-    isolation: isolate;
+  /* Bring the cinematic atmosphere back on mobile while leaving the background completely static. */
+  .da-fire-glow {
+    opacity: .72;
+    animation-duration: 7.5s;
   }
 
-  .da-home > .flex.max-w-7xl::before,
-  .da-home > .max-w-7xl:not(.flex)::before,
-  .da-home > .max-w-5xl::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    width: 100vw;
-    pointer-events: none;
-    z-index: -2;
-    background-image: url('/demonarkbackg.png');
-    background-repeat: no-repeat;
-    background-size: cover;
+  .da-smoke {
+    filter: blur(30px);
   }
 
-  .da-home > .flex.max-w-7xl::after,
-  .da-home > .max-w-7xl:not(.flex)::after,
-  .da-home > .max-w-5xl::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    width: 100vw;
-    pointer-events: none;
-    z-index: -1;
-    background: linear-gradient(180deg, rgba(9,9,9,.72) 0%, rgba(9,9,9,.08) 18%, rgba(9,9,9,.06) 78%, rgba(9,9,9,.78) 100%);
+  .da-smoke-a {
+    opacity: .22;
+    animation-duration: 26s;
   }
 
-  /* Hero scene */
-  .da-home > .flex.max-w-7xl::before {
-    top: -80px;
-    bottom: -150px;
-    transform: translateX(-50%);
-    background-position: 58% 50%;
-  }
-  .da-home > .flex.max-w-7xl::after {
-    top: -80px;
-    bottom: -150px;
-    transform: translateX(-50%);
+  .da-smoke-b {
+    opacity: .15;
+    animation-duration: 32s;
   }
 
-  /* Featured/category scene overlaps the hero scene so there is no hard seam. */
-  .da-home > .max-w-7xl:not(.flex)::before {
-    top: -170px;
-    bottom: -180px;
-    transform: translateX(-50%);
-    background-position: 68% 56%;
-    background-size: 138% auto;
-  }
-  .da-home > .max-w-7xl:not(.flex)::after {
-    top: -170px;
-    bottom: -180px;
-    transform: translateX(-50%);
-    background: linear-gradient(180deg, rgba(9,9,9,.82) 0%, rgba(9,9,9,.18) 15%, rgba(9,9,9,.06) 78%, rgba(9,9,9,.82) 100%);
+  .da-heat-haze {
+    opacity: .065;
+    filter: blur(5px);
+    animation-duration: 6.5s;
   }
 
-  /* Terms scene continues the normal-flow illusion farther down the page. */
-  .da-home > .max-w-5xl::before {
-    top: -180px;
-    bottom: -80px;
-    transform: translateX(-50%);
-    background-position: 62% 70%;
-    background-size: 128% auto;
-  }
-  .da-home > .max-w-5xl::after {
-    top: -180px;
-    bottom: -80px;
-    transform: translateX(-50%);
-    background: linear-gradient(180deg, rgba(9,9,9,.82) 0%, rgba(9,9,9,.15) 18%, rgba(9,9,9,.16) 76%, rgba(9,9,9,.92) 100%);
+  .da-red-flare {
+    opacity: 0;
   }
 
   /* Keep ember planes oversized on mobile so transform animation never exposes edges. */
@@ -331,15 +308,25 @@ header nav button {
     height: 172lvh;
   }
 
+  .da-embers-far {
+    opacity: .40;
+  }
+
+  .da-embers-mid {
+    opacity: .58;
+    filter: drop-shadow(0 0 5px rgba(255,94,46,.56));
+  }
+
+  .da-embers-near {
+    opacity: .29;
+    filter: blur(.25px) drop-shadow(0 0 8px rgba(255,103,50,.66));
+  }
+
   .da-pointer-glow { display:none; }
-  .da-smoke { filter:blur(34px); }
-  .da-embers-near { opacity:.25; filter: blur(.25px) drop-shadow(0 0 8px rgba(255,103,50,.66)); }
-  .da-embers-mid { filter: drop-shadow(0 0 5px rgba(255,94,46,.56)); }
-  .da-heat-haze { opacity:.08; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .da-home-bg { transform: scale(1.025); }
+  .da-home-bg { transform: none; }
   .da-feature-slide,
   .da-logo-pulse,
   .da-logo-sheen-copy,
