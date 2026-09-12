@@ -334,6 +334,28 @@ header nav button {
     filter: blur(.25px) drop-shadow(0 0 8px rgba(255,103,50,.66));
   }
 
+  /* Keep the small/high-value artwork in its own compositor surfaces so
+     iOS/WebKit is less likely to discard and re-rasterize it off-screen. */
+  .da-logo-pulse,
+  .da-logo-base,
+  .da-portal,
+  .da-portal > img {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .da-logo-pulse,
+  .da-portal > img {
+    will-change: transform;
+  }
+
+  .da-logo-base,
+  .da-portal > img {
+    content-visibility: visible !important;
+  }
+
   .da-pointer-glow { display:none; }
 }
 
