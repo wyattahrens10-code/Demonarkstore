@@ -1,0 +1,69 @@
+/* Final DemonArk storefront polish. Keep this file lightweight and non-visual where possible. */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior-x: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid rgba(248, 113, 113, .92);
+  outline-offset: 3px;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  /* Prevent iOS from leaving desktop hover effects visually stuck after a tap. */
+  .da-portal::after,
+  .da-action-pulse::after {
+    pointer-events: none;
+  }
+
+  .da-portal:hover::after {
+    transform: translateX(-125%);
+  }
+}
+
+@media (max-width: 767px) {
+  /* A fixed backdrop blur is expensive during every scroll frame on iOS.
+     The header is already nearly opaque, so this keeps the same look for less GPU work. */
+  header > div.absolute {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(18, 18, 20, .985) !important;
+  }
+
+  /* Avoid accidental horizontal rubber-banding from animated atmospheric layers. */
+  .da-home {
+    max-width: 100vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+}
