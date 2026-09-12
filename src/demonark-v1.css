@@ -65,45 +65,46 @@ header nav button {
 .da-fire-glow {
   z-index: -8;
   background:
-    radial-gradient(circle at 48% 22%, rgba(239,68,68,.19), transparent 34%),
-    radial-gradient(circle at 16% 72%, rgba(185,28,28,.16), transparent 28%),
-    radial-gradient(circle at 84% 62%, rgba(248,113,113,.10), transparent 25%);
+    radial-gradient(circle at 48% 22%, rgba(255,82,82,.30), transparent 35%),
+    radial-gradient(circle at 16% 72%, rgba(220,38,38,.25), transparent 31%),
+    radial-gradient(circle at 84% 62%, rgba(248,113,113,.18), transparent 27%),
+    radial-gradient(circle at 50% 82%, rgba(127,29,29,.22), transparent 34%);
   mix-blend-mode: screen;
   animation: da-fire-pulse 6.5s ease-in-out infinite;
 }
 
 .da-smoke {
   z-index: -7;
-  opacity: .28;
-  filter: blur(48px);
+  opacity: .34;
+  filter: blur(42px);
   will-change: transform, opacity;
 }
 
 .da-smoke-a {
   background:
-    radial-gradient(ellipse at 20% 35%, rgba(35,35,38,.55), transparent 43%),
-    radial-gradient(ellipse at 70% 58%, rgba(55,18,22,.38), transparent 46%),
-    radial-gradient(ellipse at 45% 85%, rgba(24,24,27,.6), transparent 40%);
+    radial-gradient(ellipse at 18% 30%, rgba(100,94,94,.70), transparent 42%),
+    radial-gradient(ellipse at 72% 54%, rgba(100,28,32,.58), transparent 47%),
+    radial-gradient(ellipse at 44% 84%, rgba(62,58,60,.72), transparent 41%);
   animation: da-smoke-drift-a 22s ease-in-out infinite alternate;
 }
 
 .da-smoke-b {
-  opacity: .20;
+  opacity: .26;
   background:
-    radial-gradient(ellipse at 78% 18%, rgba(35,35,38,.48), transparent 40%),
-    radial-gradient(ellipse at 32% 66%, rgba(90,20,24,.28), transparent 45%);
+    radial-gradient(ellipse at 80% 20%, rgba(88,84,86,.66), transparent 41%),
+    radial-gradient(ellipse at 30% 68%, rgba(125,30,36,.50), transparent 47%),
+    radial-gradient(ellipse at 58% 42%, rgba(54,52,55,.55), transparent 38%);
   animation: da-smoke-drift-b 28s ease-in-out infinite alternate;
 }
 
 .da-home-shade {
   z-index: -6;
   background:
-    linear-gradient(180deg, rgba(4,4,5,.12) 0%, rgba(5,5,6,.24) 36%, rgba(5,5,6,.56) 74%, rgba(8,8,9,.92) 100%),
-    radial-gradient(circle at 50% 28%, rgba(239,68,68,.09), transparent 48%),
-    radial-gradient(ellipse at center, transparent 44%, rgba(0,0,0,.35) 100%);
+    linear-gradient(180deg, rgba(4,4,5,.08) 0%, rgba(5,5,6,.18) 36%, rgba(5,5,6,.46) 74%, rgba(8,8,9,.86) 100%),
+    radial-gradient(circle at 50% 28%, rgba(239,68,68,.12), transparent 48%),
+    radial-gradient(ellipse at center, transparent 44%, rgba(0,0,0,.30) 100%);
 }
 
-/* Oversized ember planes move as composited layers instead of repainting background-position. */
 .da-embers {
   z-index: -5;
   top: -38vh;
@@ -160,22 +161,22 @@ header nav button {
 .da-red-flare {
   z-index: -4;
   opacity: 0;
-  background: radial-gradient(circle at 50% 35%, rgba(255,70,70,.18), rgba(127,29,29,.07) 30%, transparent 62%);
+  background: radial-gradient(circle at 50% 35%, rgba(255,70,70,.34), rgba(127,29,29,.14) 32%, transparent 64%);
   mix-blend-mode: screen;
-  animation: da-red-flare 16s ease-in-out infinite;
+  animation: da-red-flare 12s ease-in-out infinite;
 }
 
 .da-heat-haze {
   z-index: -3;
-  top: 58%;
+  top: 48%;
   bottom: -10%;
-  opacity: .12;
+  opacity: .20;
   background:
-    repeating-linear-gradient(90deg, transparent 0 36px, rgba(255,110,75,.06) 38px 40px, transparent 42px 78px),
-    linear-gradient(180deg, transparent, rgba(255,90,60,.10));
-  filter: blur(8px);
+    repeating-linear-gradient(90deg, transparent 0 30px, rgba(255,135,90,.12) 32px 35px, transparent 38px 68px),
+    linear-gradient(180deg, transparent, rgba(255,90,60,.16));
+  filter: blur(6px);
   transform-origin: bottom center;
-  animation: da-heat-waver 5.4s ease-in-out infinite alternate;
+  animation: da-heat-waver 4.8s ease-in-out infinite alternate;
 }
 
 .da-pointer-glow {
@@ -221,9 +222,9 @@ header nav button {
 @keyframes da-action-breathe { 0%,100%{scale:1;box-shadow:0 12px 38px rgba(127,29,29,.24);filter:brightness(1)} 50%{scale:1.045;box-shadow:0 18px 58px rgba(239,68,68,.48);filter:brightness(1.08)} }
 @keyframes da-action-sheen { 0%,60%{transform:translateX(-145%);opacity:0} 68%{opacity:1} 86%{transform:translateX(145%);opacity:1} 94%,100%{transform:translateX(145%);opacity:0} }
 @keyframes da-slide-in { from{opacity:0;transform:translateY(16px) scale(.985)} to{opacity:1;transform:none} }
-@keyframes da-fire-pulse { 0%,100%{opacity:.58;filter:brightness(.92)} 45%{opacity:.9;filter:brightness(1.14)} 65%{opacity:.7;filter:brightness(1.02)} }
-@keyframes da-smoke-drift-a { from{transform:translate3d(-5%,2%,0) scale(1.08);opacity:.20} to{transform:translate3d(7%,-4%,0) scale(1.18);opacity:.34} }
-@keyframes da-smoke-drift-b { from{transform:translate3d(6%,-2%,0) scale(1.04);opacity:.14} to{transform:translate3d(-8%,5%,0) scale(1.16);opacity:.25} }
+@keyframes da-fire-pulse { 0%,100%{opacity:.68;filter:brightness(.95)} 45%{opacity:1;filter:brightness(1.22)} 65%{opacity:.80;filter:brightness(1.06)} }
+@keyframes da-smoke-drift-a { from{transform:translate3d(-7%,3%,0) scale(1.10);opacity:.30} to{transform:translate3d(9%,-5%,0) scale(1.22);opacity:.52} }
+@keyframes da-smoke-drift-b { from{transform:translate3d(8%,-3%,0) scale(1.08);opacity:.22} to{transform:translate3d(-10%,6%,0) scale(1.20);opacity:.42} }
 
 @keyframes da-embers-far-rise {
   from { transform: translate3d(-1.5vw, 24vh, 0); }
@@ -242,14 +243,10 @@ header nav button {
   48%  { opacity:.38; }
   100% { opacity:.32; }
 }
-@keyframes da-red-flare { 0%,66%,100%{opacity:0} 70%{opacity:.18} 73%{opacity:.035} 76%{opacity:.12} 80%{opacity:0} }
-@keyframes da-heat-waver { from{transform:translate3d(-1%,2%,0) skewX(-.4deg) scaleX(1.02)} to{transform:translate3d(1%,-1%,0) skewX(.7deg) scaleX(.985)} }
+@keyframes da-red-flare { 0%,58%,100%{opacity:0} 63%{opacity:.34} 68%{opacity:.08} 73%{opacity:.26} 79%{opacity:0} }
+@keyframes da-heat-waver { from{transform:translate3d(-1.5%,3%,0) skewX(-.7deg) scaleX(1.03)} to{transform:translate3d(1.5%,-2%,0) skewX(1deg) scaleX(.975)} }
 
 @media (max-width: 767px) {
-  /* Keep the background texture on a stable oversized large-viewport canvas.
-     iOS collapses browser chrome on the first scroll; a fixed inset:0 layer
-     changes size at that moment and background-size:cover visibly re-crops.
-     120lvh stays constant, so the image itself never resizes or zooms. */
   .da-home-bg-frame {
     display: block !important;
     inset: auto !important;
@@ -287,37 +284,36 @@ header nav button {
     height: 100lvh;
   }
 
-  /* Bring the cinematic atmosphere back on mobile while leaving the background completely static. */
   .da-fire-glow {
-    opacity: .72;
-    animation-duration: 7.5s;
+    opacity: .95;
+    animation-duration: 6.6s;
   }
 
   .da-smoke {
-    filter: blur(30px);
+    filter: blur(22px);
   }
 
   .da-smoke-a {
-    opacity: .22;
-    animation-duration: 26s;
+    opacity: .42;
+    animation-duration: 20s;
   }
 
   .da-smoke-b {
-    opacity: .15;
-    animation-duration: 32s;
+    opacity: .30;
+    animation-duration: 24s;
   }
 
   .da-heat-haze {
-    opacity: .065;
-    filter: blur(5px);
-    animation-duration: 6.5s;
+    top: 42%;
+    opacity: .16;
+    filter: blur(4px);
+    animation-duration: 5.2s;
   }
 
   .da-red-flare {
-    opacity: 0;
+    animation-duration: 10s;
   }
 
-  /* Keep ember planes oversized on mobile so transform animation never exposes edges. */
   .da-embers {
     top: -36lvh;
     right: -14vw;
@@ -326,9 +322,7 @@ header nav button {
     height: 172lvh;
   }
 
-  .da-embers-far {
-    opacity: .40;
-  }
+  .da-embers-far { opacity: .40; }
 
   .da-embers-mid {
     opacity: .58;
