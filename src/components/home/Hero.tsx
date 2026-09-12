@@ -13,6 +13,7 @@ export default function Hero() {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeFeature, setActiveFeature] = useState(0);
   const discordUrl = 'https://discord.gg/CgVqbyGr4E';
+  const lightweightMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
 
   useEffect(() => {
     let cancelled = false;
@@ -34,39 +35,28 @@ export default function Hero() {
     const background = document.querySelector<HTMLElement>('.da-home-bg');
     if (!background) return;
 
+    // The background is intentionally NOT scroll-linked anymore. It moves on
+    // its own compositor animation so scrolling has no extra JS/native timeline work.
     const mobile = window.matchMedia('(max-width: 767px)').matches;
-    const ScrollTimelineCtor = (window as any).ScrollTimeline;
+    const animation = background.animate(
+      mobile
+        ? [
+            { transform: 'translate3d(0, 0, 0) scale(1.035)' },
+            { transform: 'translate3d(0, -28px, 0) scale(1.07)' },
+          ]
+        : [
+            { transform: 'translate3d(0, 0, 0) scale(1.02)' },
+            { transform: 'translate3d(0, -38px, 0) scale(1.065)' },
+          ],
+      {
+        duration: mobile ? 16000 : 18000,
+        direction: 'alternate',
+        iterations: Infinity,
+        easing: 'ease-in-out',
+      },
+    );
 
-    // Native scroll-linked animation: the browser owns the scroll/transform sync.
-    // No scroll listener, no RAF loop, and no per-frame JS style writes.
-    if (typeof ScrollTimelineCtor === 'function' && document.scrollingElement) {
-      const timeline = new ScrollTimelineCtor({
-        source: document.scrollingElement,
-        axis: 'block',
-      });
-
-      const effect = new KeyframeEffect(
-        background,
-        [
-          { transform: `translate3d(0, 0, 0) scale(${mobile ? 1.02 : 1.01})` },
-          { transform: `translate3d(0, ${mobile ? -150 : -92}px, 0) scale(${mobile ? 1.12 : 1.105})` },
-        ],
-        { duration: 1, fill: 'both' },
-      );
-
-      const animation = new (window as any).Animation(effect, timeline);
-      animation.play();
-
-      return () => {
-        animation.cancel();
-        background.style.removeProperty('transform');
-      };
-    }
-
-    // Smooth universal fallback: stay static rather than reintroducing the
-    // JS scroll loop that was causing visible jank on iPhone browsers.
-    background.style.transform = `translate3d(0, 0, 0) scale(${mobile ? 1.04 : 1.025})`;
-    return () => background.style.removeProperty('transform');
+    return () => animation.cancel();
   }, []);
 
   useEffect(() => {
@@ -129,25 +119,19 @@ export default function Hero() {
 
   return (
     <section className="da-home">
-      <div
-        className="da-home-bg-frame"
-        aria-hidden="true"
-        style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -9, pointerEvents: 'none', contain: 'strict' }}
-      >
-        <div
-          className="da-home-bg"
-          style={{ position: 'absolute', inset: '-18%', width: 'auto', height: 'auto', zIndex: 0 }}
-        />
+      <div className="da-home-bg-frame" aria-hidden="true" style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: -9, pointerEvents: 'none', contain: 'strict' }}>
+        <div className="da-home-bg" style={{ position: 'absolute', inset: lightweightMobile ? '-10%' : '-14%', width: 'auto', height: 'auto', zIndex: 0 }} />
       </div>
-      <div className="da-fire-glow" aria-hidden="true" />
-      <div className="da-smoke da-smoke-a" aria-hidden="true" />
-      <div className="da-smoke da-smoke-b" aria-hidden="true" />
+
+      {!lightweightMobile && <div className="da-fire-glow" aria-hidden="true" />}
+      {!lightweightMobile && <div className="da-smoke da-smoke-a" aria-hidden="true" />}
+      {!lightweightMobile && <div className="da-smoke da-smoke-b" aria-hidden="true" />}
       <div className="da-home-shade" aria-hidden="true" />
       <div className="da-embers da-embers-far" aria-hidden="true" />
       <div className="da-embers da-embers-mid" aria-hidden="true" />
       <div className="da-embers da-embers-near" aria-hidden="true" />
-      <div className="da-red-flare" aria-hidden="true" />
-      <div className="da-heat-haze" aria-hidden="true" />
+      {!lightweightMobile && <div className="da-red-flare" aria-hidden="true" />}
+      {!lightweightMobile && <div className="da-heat-haze" aria-hidden="true" />}
       <div className="da-pointer-glow" aria-hidden="true" />
 
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center px-4 pb-16 pt-24 text-center sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
@@ -168,21 +152,21 @@ export default function Hero() {
           </a>
         </div>
 
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/78 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300 backdrop-blur-md"><ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv</div>
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#151517]/88 px-4 py-2 text-[11px] font-semibold uppercase tracking-[.12em] text-zinc-300"><ShieldCheck className="h-3.5 w-3.5 text-red-400" /> Secure checkout by Tip4Serv</div>
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[1.04fr_.96fr] lg:items-stretch">
           <div className="min-h-[420px] lg:min-h-[560px]">
             {currentFeature ? (
-              <Link key={currentFeature.id} to={`/product/${currentFeature.slug}`} className="da-feature-slide group da-panel relative flex h-full min-h-[420px] overflow-hidden rounded-3xl lg:min-h-[560px]">
+              <Link key={currentFeature.id} to={`/product/${currentFeature.slug}`} className="da-feature-slide group da-panel relative flex h-full min-h-[420px] overflow-hidden rounded-3xl lg:min-h-[560px]" style={lightweightMobile ? { backdropFilter: 'none', WebkitBackdropFilter: 'none', background: 'rgba(17,17,19,.94)' } : undefined}>
                 {currentFeature.image ? <img src={currentFeature.image} alt={currentFeature.name} className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.06]" /> : <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-zinc-900 to-black" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111113] via-black/25 to-black/5" />
-                <div className="absolute left-5 top-5 z-10 rounded-full border border-red-400/25 bg-[#151517]/80 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.2em] text-red-300 backdrop-blur-md sm:left-6 sm:top-6">Featured DemonArk</div>
+                <div className="absolute left-5 top-5 z-10 rounded-full border border-red-400/25 bg-[#151517]/92 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.2em] text-red-300 sm:left-6 sm:top-6">Featured DemonArk</div>
                 {featuredProducts.length > 1 && (
                   <div className="absolute right-5 top-5 z-20 flex gap-2 sm:right-6 sm:top-6">
-                    <button onClick={(event) => { event.preventDefault(); previousFeature(); }} aria-label="Previous featured item" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 backdrop-blur-md transition hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowLeft className="h-4 w-4" /></button>
-                    <button onClick={(event) => { event.preventDefault(); nextFeature(); }} aria-label="Next featured item" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#171719]/85 text-zinc-200 backdrop-blur-md transition hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowRight className="h-4 w-4" /></button>
+                    <button onClick={(event) => { event.preventDefault(); previousFeature(); }} aria-label="Previous featured item" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#171719]/92 text-zinc-200 transition hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowLeft className="h-4 w-4" /></button>
+                    <button onClick={(event) => { event.preventDefault(); nextFeature(); }} aria-label="Next featured item" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#171719]/92 text-zinc-200 transition hover:border-red-500/50 hover:bg-[#202023] hover:text-white"><ArrowRight className="h-4 w-4" /></button>
                   </div>
                 )}
                 <div className="relative z-10 mt-auto w-full p-7 text-left sm:p-9 lg:p-10">
@@ -205,7 +189,7 @@ export default function Hero() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 pb-40 pt-8 sm:px-6 lg:px-8">
-        <div className="da-panel rounded-3xl border-red-500/20 p-7 sm:p-10 lg:p-12">
+        <div className="da-panel rounded-3xl border-red-500/20 p-7 sm:p-10 lg:p-12" style={lightweightMobile ? { backdropFilter: 'none', WebkitBackdropFilter: 'none', background: 'rgba(17,17,19,.94)' } : undefined}>
           <div className="text-center"><div className="text-xs font-black uppercase tracking-[.24em] text-red-400">DemonArk Store Policy</div><h2 className="mt-3 text-3xl font-black uppercase tracking-tight text-white sm:text-4xl">Terms of Service</h2></div>
           <div className="mt-9 space-y-4 text-sm leading-7 text-zinc-300 sm:text-base">
             <p>• All products sold through the DemonArk store are digital or in-game products for ARK: Survival Ascended.</p><p>• Purchases are final and non-refundable except where a refund is required by applicable law or a verified technical issue is approved by DemonArk administration.</p><p>• Items lost through normal gameplay, PvP, player mistakes, wipes, or other expected in-game events are not automatically replaced. Verified losses caused by a DemonArk server error, crash, or confirmed technical issue may be reviewed for replacement at staff discretion.</p><p>• A ban or removal from DemonArk does not automatically qualify a purchase for a refund or compensation.</p><p>• Players are responsible for entering the correct account, character, server, and other requested delivery information when purchasing. Changing maps, servers, or characters before fulfillment may interrupt delivery.</p><p>• Subscription benefits, private-server services, and store offerings may be updated, replaced, or discontinued. Any material change will be handled according to the terms attached to that purchase and applicable law.</p><p>• Abuse of chargebacks, fraudulent payments, exploits, or attempts to manipulate store delivery may result in store restrictions or account action.</p><p className="pt-3 text-zinc-400">Personal information used for checkout or fulfillment is handled only for operating the DemonArk store and delivering purchases through the services involved in the transaction.</p>
