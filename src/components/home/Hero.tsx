@@ -31,38 +31,33 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    const mobile = window.matchMedia('(max-width: 767px)').matches;
-    if (mobile) {
-      document.documentElement.style.setProperty('--da-bg-scale', '1.035');
-      document.documentElement.style.setProperty('--da-bg-shift', '0px');
-      return () => {
-        document.documentElement.style.removeProperty('--da-bg-scale');
-        document.documentElement.style.removeProperty('--da-bg-shift');
-      };
-    }
-
     let raf = 0;
     let current = 0;
     let target = 0;
     let running = true;
+    const mobile = window.matchMedia('(max-width: 767px)').matches;
+
     const updateTarget = () => {
       const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
       target = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
       if (!raf) raf = window.requestAnimationFrame(animate);
     };
+
     const animate = () => {
       raf = 0;
       if (!running) return;
-      current += (target - current) * 0.09;
+      current += (target - current) * (mobile ? 0.14 : 0.09);
       if (Math.abs(target - current) < 0.0008) current = target;
-      const scale = 1.015 + current * 0.18;
-      const shift = -12 * current;
+      const scale = (mobile ? 1.035 : 1.015) + current * (mobile ? 0.12 : 0.18);
+      const shift = (mobile ? -34 : -12) * current;
       document.documentElement.style.setProperty('--da-bg-scale', scale.toFixed(4));
       document.documentElement.style.setProperty('--da-bg-shift', `${shift.toFixed(2)}px`);
       if (current !== target) raf = window.requestAnimationFrame(animate);
     };
+
     updateTarget();
     window.addEventListener('scroll', updateTarget, { passive: true });
+
     return () => {
       running = false;
       window.removeEventListener('scroll', updateTarget);
