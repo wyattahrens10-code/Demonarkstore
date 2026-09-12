@@ -32,71 +32,41 @@ export default function Hero() {
 
   useEffect(() => {
     const background = document.querySelector<HTMLElement>('.da-home-bg');
-    const home = document.querySelector<HTMLElement>('.da-home');
-    if (!background || !home) return;
+    if (!background) return;
 
-    let raf = 0;
-    let stableViewportHeight = window.innerHeight;
-    let stableWidth = window.innerWidth;
-    let scrollable = 1;
-    let running = true;
     const mobile = window.matchMedia('(max-width: 767px)').matches;
+    const ScrollTimelineCtor = (window as any).ScrollTimeline;
 
-    // The fixed frame never transforms. Only this oversized child texture moves,
-    // which avoids the WebKit/iOS jank caused by transforming a fixed full-screen layer.
-    const baseScale = mobile ? 1.01 : 1.005;
-    const scaleRange = mobile ? 0.08 : 0.09;
-    const shiftRange = mobile ? -145 : -82;
+    // Native scroll-linked animation: the browser owns the scroll/transform sync.
+    // No scroll listener, no RAF loop, and no per-frame JS style writes.
+    if (typeof ScrollTimelineCtor === 'function' && document.scrollingElement) {
+      const timeline = new ScrollTimelineCtor({
+        source: document.scrollingElement,
+        axis: 'block',
+      });
 
-    const measure = () => {
-      scrollable = Math.max(document.documentElement.scrollHeight - stableViewportHeight, 1);
-    };
+      const effect = new KeyframeEffect(
+        background,
+        [
+          { transform: `translate3d(0, 0, 0) scale(${mobile ? 1.02 : 1.01})` },
+          { transform: `translate3d(0, ${mobile ? -150 : -92}px, 0) scale(${mobile ? 1.12 : 1.105})` },
+        ],
+        { duration: 1, fill: 'both' },
+      );
 
-    const render = () => {
-      raf = 0;
-      if (!running) return;
+      const animation = new (window as any).Animation(effect, timeline);
+      animation.play();
 
-      const progress = Math.min(Math.max(window.scrollY / scrollable, 0), 1);
-      const scale = baseScale + progress * scaleRange;
-      const shift = shiftRange * progress;
-      background.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
-    };
+      return () => {
+        animation.cancel();
+        background.style.removeProperty('transform');
+      };
+    }
 
-    const requestRender = () => {
-      if (!raf) raf = window.requestAnimationFrame(render);
-    };
-
-    const onResize = () => {
-      const width = window.innerWidth;
-      if (Math.abs(width - stableWidth) > 2) {
-        stableWidth = width;
-        stableViewportHeight = window.innerHeight;
-        measure();
-      }
-      requestRender();
-    };
-
-    measure();
-    render();
-    window.addEventListener('scroll', requestRender, { passive: true });
-    window.addEventListener('resize', onResize, { passive: true });
-
-    const resizeObserver = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(() => {
-          measure();
-          requestRender();
-        })
-      : null;
-    resizeObserver?.observe(home);
-
-    return () => {
-      running = false;
-      window.removeEventListener('scroll', requestRender);
-      window.removeEventListener('resize', onResize);
-      resizeObserver?.disconnect();
-      if (raf) window.cancelAnimationFrame(raf);
-      background.style.removeProperty('transform');
-    };
+    // Smooth universal fallback: stay static rather than reintroducing the
+    // JS scroll loop that was causing visible jank on iPhone browsers.
+    background.style.transform = `translate3d(0, 0, 0) scale(${mobile ? 1.04 : 1.025})`;
+    return () => background.style.removeProperty('transform');
   }, []);
 
   useEffect(() => {
@@ -166,7 +136,7 @@ export default function Hero() {
       >
         <div
           className="da-home-bg"
-          style={{ position: 'absolute', inset: '-14%', width: 'auto', height: 'auto', zIndex: 0 }}
+          style={{ position: 'absolute', inset: '-18%', width: 'auto', height: 'auto', zIndex: 0 }}
         />
       </div>
       <div className="da-fire-glow" aria-hidden="true" />
