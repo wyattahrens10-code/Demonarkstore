@@ -31,11 +31,18 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
+    const background = document.querySelector<HTMLElement>('.da-home-bg');
+    if (!background) return;
+
     let raf = 0;
     let current = 0;
     let target = 0;
     let running = true;
     const mobile = window.matchMedia('(max-width: 767px)').matches;
+    const baseScale = mobile ? 1.045 : 1.025;
+    const scaleRange = mobile ? 0.18 : 0.21;
+    const shiftRange = mobile ? -82 : -42;
+    const smoothing = mobile ? 0.2 : 0.13;
 
     const updateTarget = () => {
       const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
@@ -46,13 +53,14 @@ export default function Hero() {
     const animate = () => {
       raf = 0;
       if (!running) return;
-      current += (target - current) * (mobile ? 0.18 : 0.12);
-      if (Math.abs(target - current) < 0.0008) current = target;
-      const scale = (mobile ? 1.045 : 1.025) + current * (mobile ? 0.18 : 0.21);
-      const shift = (mobile ? -82 : -42) * current;
-      document.documentElement.style.setProperty('--da-bg-scale', scale.toFixed(4));
-      document.documentElement.style.setProperty('--da-bg-shift', `${shift.toFixed(2)}px`);
-      document.documentElement.style.setProperty('--da-scroll-progress', current.toFixed(4));
+
+      current += (target - current) * smoothing;
+      if (Math.abs(target - current) < 0.0007) current = target;
+
+      const scale = baseScale + current * scaleRange;
+      const shift = shiftRange * current;
+      background.style.transform = `translate3d(0, ${shift.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
+
       if (current !== target) raf = window.requestAnimationFrame(animate);
     };
 
@@ -63,9 +71,7 @@ export default function Hero() {
       running = false;
       window.removeEventListener('scroll', updateTarget);
       if (raf) window.cancelAnimationFrame(raf);
-      document.documentElement.style.removeProperty('--da-bg-scale');
-      document.documentElement.style.removeProperty('--da-bg-shift');
-      document.documentElement.style.removeProperty('--da-scroll-progress');
+      background.style.removeProperty('transform');
     };
   }, []);
 
