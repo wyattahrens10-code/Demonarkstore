@@ -31,6 +31,16 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
+    const mobile = window.matchMedia('(max-width: 767px)').matches;
+    if (mobile) {
+      document.documentElement.style.setProperty('--da-bg-scale', '1.035');
+      document.documentElement.style.setProperty('--da-bg-shift', '0px');
+      return () => {
+        document.documentElement.style.removeProperty('--da-bg-scale');
+        document.documentElement.style.removeProperty('--da-bg-shift');
+      };
+    }
+
     let raf = 0;
     let current = 0;
     let target = 0;
@@ -53,11 +63,9 @@ export default function Hero() {
     };
     updateTarget();
     window.addEventListener('scroll', updateTarget, { passive: true });
-    window.addEventListener('resize', updateTarget);
     return () => {
       running = false;
       window.removeEventListener('scroll', updateTarget);
-      window.removeEventListener('resize', updateTarget);
       if (raf) window.cancelAnimationFrame(raf);
       document.documentElement.style.removeProperty('--da-bg-scale');
       document.documentElement.style.removeProperty('--da-bg-shift');
@@ -80,6 +88,9 @@ export default function Hero() {
     });
     return [demonVip, privateServer].filter((product, index, list): product is Product => Boolean(product) && list.findIndex((item) => item?.id === product?.id) === index);
   }, [products]);
+
+  const vipCoinProductImage = useMemo(() => products.find((product) => `${product.name || ''} ${product.slug || ''}`.toLowerCase().includes('vip coin'))?.image || null, [products]);
+  const demonVipProductImage = useMemo(() => products.find((product) => `${product.name || ''} ${product.slug || ''}`.toLowerCase().includes('demon vip'))?.image || null, [products]);
 
   useEffect(() => {
     if (featuredProducts.length < 2) return;
@@ -146,10 +157,10 @@ export default function Hero() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-rows-2">
-            <PortalCard image="/vipcoinpile.png" fallbackImage="/VIPCOINLOGO.png" title="VIP COINS" subtitle="Premium currency" href={categoryHref(['vip coin'])} />
-            <PortalCard image="/demonarkvipbanner.png" title="DEMON VIP" subtitle="30 day membership" href={categoryHref(['demon vip'])} />
-            <PortalCard image="/misccatagorylogo.png" title="MISC" subtitle="Extras and special items" href={categoryHref(['misc'])} />
-            <PortalCard image="/privateservercatagorylogo.png" title="PRIVATE SERVERS" subtitle="Your own DemonArk experience" href={categoryHref(['private'])} />
+            <PortalCard image="/vipcoinpile.png?v=20260911" fallbackImage={vipCoinProductImage || '/VIPCOINLOGO.png?v=20260911'} title="VIP COINS" subtitle="Premium currency" href={categoryHref(['vip coin'])} />
+            <PortalCard image="/demonarkvipbanner.png?v=20260911" fallbackImage={demonVipProductImage || undefined} title="DEMON VIP" subtitle="30 day membership" href={categoryHref(['demon vip'])} />
+            <PortalCard image="/misccatagorylogo.png?v=20260911" title="MISC" subtitle="Extras and special items" href={categoryHref(['misc'])} />
+            <PortalCard image="/privateservercatagorylogo.png?v=20260911" title="PRIVATE SERVERS" subtitle="Your own DemonArk experience" href={categoryHref(['private'])} />
           </div>
         </div>
       </div>
@@ -167,9 +178,12 @@ export default function Hero() {
 }
 
 function PortalCard({ image, fallbackImage, title, subtitle, href }: { image: string; fallbackImage?: string; title: string; subtitle: string; href: string }) {
+  const [src, setSrc] = useState(image);
+  useEffect(() => setSrc(image), [image]);
+
   return (
     <Link to={href} className="da-portal group relative h-[175px] overflow-hidden rounded-2xl border border-white/10 bg-[#131315]/85 transition duration-500 hover:-translate-y-1.5 hover:border-red-400/60 hover:shadow-[0_24px_60px_rgba(127,29,29,.30)] sm:h-[230px] lg:h-full lg:min-h-[270px]">
-      <img src={image} alt={title} onError={(event) => { if (fallbackImage && event.currentTarget.src !== fallbackImage) event.currentTarget.src = fallbackImage; }} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-[1.14]" />
+      <img src={src} alt={title} loading="eager" fetchPriority="high" decoding="async" onError={() => { if (fallbackImage && src !== fallbackImage) setSrc(fallbackImage); }} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:saturate-[1.14]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:p-5"><div className="min-w-0"><div className="text-base font-black leading-tight text-white drop-shadow-lg sm:text-xl">{title}</div><div className="mt-1 hidden text-[10px] font-bold uppercase tracking-[.14em] text-red-300 sm:block">{subtitle}</div></div><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-400/40 bg-red-700/90 text-white shadow-[0_0_20px_rgba(239,68,68,.24)] transition duration-300 group-hover:scale-110 group-hover:bg-red-500"><ArrowRight className="h-4 w-4" /></div></div>
     </Link>
