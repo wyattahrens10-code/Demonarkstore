@@ -16,19 +16,28 @@ const legacyEnglishReplacements: Array<[RegExp, string]> = [
   [/^Se déconnecter$/i, 'Log out'],
 ];
 
-function normalizeLegacyFrenchLabels(root: ParentNode = document) {
+function normalizeTextNode(node: Node) {
+  const original = node.textContent?.trim();
+  if (!original) return;
+
+  for (const [pattern, replacement] of legacyEnglishReplacements) {
+    if (pattern.test(original)) {
+      node.textContent = (node.textContent || '').replace(pattern, replacement);
+      break;
+    }
+  }
+}
+
+function normalizeLegacyFrenchLabels(root: Node = document.documentElement) {
+  if (root.nodeType === Node.TEXT_NODE) {
+    normalizeTextNode(root);
+    return;
+  }
+
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   let node: Node | null = walker.nextNode();
   while (node) {
-    const original = node.textContent?.trim();
-    if (original) {
-      for (const [pattern, replacement] of legacyEnglishReplacements) {
-        if (pattern.test(original)) {
-          node.textContent = (node.textContent || '').replace(pattern, replacement);
-          break;
-        }
-      }
-    }
+    normalizeTextNode(node);
     node = walker.nextNode();
   }
 }
@@ -42,7 +51,11 @@ document.addEventListener('click', (event) => {
   window.open(DISCORD_INVITE, '_blank', 'noopener,noreferrer');
 }, true);
 
-const labelObserver = new MutationObserver(() => normalizeLegacyFrenchLabels());
+const labelObserver = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    mutation.addedNodes.forEach((node) => normalizeLegacyFrenchLabels(node));
+  }
+});
 labelObserver.observe(document.documentElement, { childList: true, subtree: true });
 queueMicrotask(() => normalizeLegacyFrenchLabels());
 
