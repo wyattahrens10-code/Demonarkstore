@@ -5,6 +5,16 @@ import './index.css';
 import './demonark-v1.css';
 
 const DISCORD_INVITE = 'https://discord.gg/CgVqbyGr4E';
+const LANGUAGE_STORAGE_KEY = 'app.language';
+
+try {
+  if (!window.localStorage.getItem(LANGUAGE_STORAGE_KEY)) {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, 'en');
+    document.documentElement.lang = 'en';
+  }
+} catch {
+  // Storage can be unavailable in private/locked-down browser contexts.
+}
 
 const legacyEnglishReplacements: Array<[RegExp, string]> = [
   [/^Compte \((.+)\)$/i, 'Account ($1)'],
@@ -16,7 +26,16 @@ const legacyEnglishReplacements: Array<[RegExp, string]> = [
   [/^Se déconnecter$/i, 'Log out'],
 ];
 
+function shouldNormalizeLegacyLabels() {
+  try {
+    return window.localStorage.getItem(LANGUAGE_STORAGE_KEY) !== 'fr';
+  } catch {
+    return document.documentElement.lang !== 'fr';
+  }
+}
+
 function normalizeTextNode(node: Node) {
+  if (!shouldNormalizeLegacyLabels()) return;
   const original = node.textContent?.trim();
   if (!original) return;
 
@@ -29,6 +48,8 @@ function normalizeTextNode(node: Node) {
 }
 
 function normalizeLegacyFrenchLabels(root: Node = document.documentElement) {
+  if (!shouldNormalizeLegacyLabels()) return;
+
   if (root.nodeType === Node.TEXT_NODE) {
     normalizeTextNode(root);
     return;
@@ -52,6 +73,7 @@ document.addEventListener('click', (event) => {
 }, true);
 
 const labelObserver = new MutationObserver((mutations) => {
+  if (!shouldNormalizeLegacyLabels()) return;
   for (const mutation of mutations) {
     mutation.addedNodes.forEach((node) => normalizeLegacyFrenchLabels(node));
   }
