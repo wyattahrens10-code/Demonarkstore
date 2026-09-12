@@ -39,10 +39,14 @@ export default function Hero() {
     let target = 0;
     let running = true;
     const mobile = window.matchMedia('(max-width: 767px)').matches;
-    const baseScale = mobile ? 1.045 : 1.025;
-    const scaleRange = mobile ? 0.18 : 0.21;
-    const shiftRange = mobile ? -82 : -42;
-    const smoothing = mobile ? 0.2 : 0.13;
+
+    // Keep the image near a constant size so iOS Safari does not have to
+    // continuously composite an increasingly large full-screen texture.
+    // Use more vertical travel instead so the parallax remains noticeable.
+    const baseScale = mobile ? 1.055 : 1.035;
+    const scaleRange = mobile ? 0.035 : 0.045;
+    const shiftRange = mobile ? -128 : -72;
+    const smoothing = mobile ? 0.18 : 0.13;
 
     const updateTarget = () => {
       const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
