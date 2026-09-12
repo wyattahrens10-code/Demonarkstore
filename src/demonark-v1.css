@@ -246,14 +246,32 @@ header nav button {
 @keyframes da-heat-waver { from{transform:translate3d(-1%,2%,0) skewX(-.4deg) scaleX(1.02)} to{transform:translate3d(1%,-1%,0) skewX(.7deg) scaleX(.985)} }
 
 @media (max-width: 767px) {
+  /* Keep the background texture on a stable oversized large-viewport canvas.
+     iOS collapses browser chrome on the first scroll; a fixed inset:0 layer
+     changes size at that moment and background-size:cover visibly re-crops.
+     120lvh stays constant, so the image itself never resizes or zooms. */
   .da-home-bg-frame {
     display: block !important;
+    inset: auto !important;
+    top: -10lvh;
+    left: 0;
+    width: 100vw;
+    height: 120lvh;
+    bottom: auto;
+    right: auto;
+    contain: strict;
   }
 
   .da-home-bg {
+    inset: 0;
+    width: 100%;
+    height: 100%;
     background-position: 58% center;
     background-size: cover;
     transform: none !important;
+    will-change: auto;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
   }
 
   .da-home-shade,
