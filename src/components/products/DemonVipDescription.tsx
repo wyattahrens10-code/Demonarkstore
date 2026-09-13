@@ -1,8 +1,8 @@
-import { Coins, LockKeyhole, BadgePercent, TrendingUp, Crown, MessageCircle, Gift, Sparkles } from 'lucide-react';
+import { LockKeyhole, BadgePercent, TrendingUp, Crown, MessageCircle, Gift, Sparkles } from 'lucide-react';
 
 const benefits = [
   {
-    icon: Coins,
+    image: '/VIPCOINLOGO.png',
     title: '4,000 VIP COINS',
     text: 'Receive 4,000 VIP Coins instantly with your membership.',
     accent: 'text-amber-300',
@@ -56,7 +56,7 @@ export default function DemonVipDescription() {
           30 Day Membership
         </div>
         <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-          😈 DEMON <span className="text-amber-300">VIP</span> — 30 DAYS
+          DEMON <span className="text-amber-300">VIP</span> — 30 DAYS
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-300 sm:text-base">
           Unlock the full DemonArk VIP experience for 30 days with exclusive in-game rewards, private community perks, store savings, and an instant VIP Coin bonus.
@@ -71,10 +71,14 @@ export default function DemonVipDescription() {
         </div>
 
         <div className="space-y-2.5">
-          {benefits.map(({ icon: Icon, title, text, accent }) => (
+          {benefits.map(({ icon: Icon, image, title, text, accent }) => (
             <div key={title} className="group flex gap-3 rounded-2xl border border-white/8 bg-white/[.025] p-3.5 transition duration-200 hover:border-red-500/20 hover:bg-white/[.04]">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/25">
-                <Icon className={`h-5 w-5 ${accent}`} />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/25">
+                {image ? (
+                  <img src={image} alt="VIP Coin" className="h-8 w-8 object-contain" />
+                ) : Icon ? (
+                  <Icon className={`h-5 w-5 ${accent}`} />
+                ) : null}
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-black tracking-wide text-white sm:text-sm">{title}</h3>
