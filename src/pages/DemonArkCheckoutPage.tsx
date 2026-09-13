@@ -396,6 +396,7 @@ export default function DemonArkCheckoutPage() {
             <h2 className="text-2xl font-black">20% VIP discount ready</h2>
             <p className="mt-3 text-sm text-zinc-400">Your private one-use VIP code is ready. We'll copy it before opening Tip4Serv.</p>
             <div className="mt-5 rounded-xl bg-[#222225] p-4 text-center font-black">{vipCoupon.code}</div>
+            <div className="mt-3 rounded-xl border border-amber-400/20 bg-amber-400/[.06] px-4 py-3 text-center text-xs font-bold text-amber-300">This VIP code expires in 10 minutes.</div>
             <button onClick={continueCoupon} className="mt-5 w-full rounded-xl bg-red-600 p-4 font-black">Copy VIP code & open payment</button>
           </div>
         </div>
@@ -468,10 +469,10 @@ export default function DemonArkCheckoutPage() {
                     <b>Server *</b>
                     <div className="relative mt-2">
                       <Server className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-red-400" />
-                      <select value={selectedServer} onChange={(event) => setSelectedServer(event.target.value)} className="input-field !bg-[#222225] pl-10">
+                      <select value={selectedServer} onChange={(event) => setSelectedServer(event.target.value)} className="input-field !bg-[#222225] appearance-none pl-10 pr-10">
                         {LAUNCH_SERVERS.map((server) => <option key={server}>{server}</option>)}
                       </select>
-                      <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                     </div>
                   </label>
                 </div>
