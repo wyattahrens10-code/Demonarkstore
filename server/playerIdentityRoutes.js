@@ -9,6 +9,10 @@ const DEMON_VIP_DISCOUNT_PERCENT = 20;
 const DEMON_VIP_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const VIP_COUPON_TTL_SECONDS = 10 * 60;
 const OWNER_VIP_USER_IDS = new Set([228127]);
+// Temporary QA switch: force selected accounts to behave as non-VIP so the
+// normal customer checkout/upsell path can be tested end-to-end. Remove the
+// user ID from this set to restore the normal owner/test/live entitlement flow.
+const VIP_TEST_DISABLED_USER_IDS = new Set([228127]);
 
 function jsonError(res, status, message) { return res.status(status).json({ error: message }); }
 
@@ -59,6 +63,7 @@ function isPaidStatus(value) { return ['paid','active','processed','complete','c
 function findTestDemonVipPayment(payments, user) { const now = Date.now(); return payments.find((payment) => { if (!paymentBelongsToUser(payment, user)) return false; if (String(payment?.mode || '').trim().toLowerCase() !== 'test') return false; if (!isPaidStatus(payment?.status)) return false; const cartText = normalizedName(typeof payment?.cart === 'string' ? payment.cart : payment?.cart?.name ?? payment?.product_name ?? payment?.name ?? ''); if (!cartText.includes(DEMON_VIP_NAME)) return false; const paidAt = unixToMs(payment?.date ?? payment?.created_at ?? payment?.start_date); return Boolean(paidAt && paidAt + DEMON_VIP_DURATION_MS > now); }) || null; }
 
 async function getVerifiedVip(token, user) {
+  if (VIP_TEST_DISABLED_USER_IDS.has(Number(user?.id))) return null;
   if (OWNER_VIP_USER_IDS.has(Number(user?.id))) return { source: 'owner_override', vip: { id: Number(user.id), status: 'active', onetime: false, unsubscribed: false }, expiresAt: 0, testMode: false, ownerOverride: true };
   const subscriptions = await loadUserSubscriptions(token); const liveVip = findDemonVip(subscriptions);
   if (liveVip) return { source: 'subscription', vip: liveVip, expiresAt: getMembershipExpiresAt(liveVip), testMode: false };
@@ -80,7 +85,6 @@ router.post('/vip-checkout-coupon', requireTip4ServUser, async (req, res) => {
     const apiKey = await loadStoreApiKey(); if (!apiKey) return jsonError(res, 500, 'Tip4Serv store API key is not configured.');
 
     const code = `DAVIP-${randomBytes(8).toString('hex').toUpperCase()}`;
-    // Tip4Serv expects coupon expiration as a Unix timestamp in seconds, not JavaScript milliseconds.
     const expirationSeconds = Math.floor(Date.now() / 1000) + VIP_COUPON_TTL_SECONDS;
     const couponResponse = await fetch(`${TIP4SERV_BASE}/store/discount/coupon`, {
       method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json', 'Content-Type': 'application/json' },
