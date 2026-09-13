@@ -10,15 +10,19 @@ import CrossSellSection from './CrossSellSection';
 import CartItemFields from './CartItemFields';
 import { useT } from '../../lib/i18n';
 import { useStore } from '../../lib/store';
+import { useTip4ServAuth } from '../../lib/tip4servAuth';
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, updateCustomFields, clearCart } = useCart();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [vipActive, setVipActive] = useState(false);
   const { addToast } = useToast();
   const navigate = useNavigate();
   const t = useT();
   const { store } = useStore();
+  const { token } = useTip4ServAuth();
   const currency = store?.currency;
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
@@ -36,6 +40,28 @@ export default function CartDrawer() {
     }
   }, [isOpen, closeCart]);
 
+  useEffect(() => {
+    if (!token) {
+      setVipActive(false);
+      return;
+    }
+    let cancelled = false;
+    fetch(`${apiBaseUrl}/api/account/vip-status`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Unable to verify VIP status');
+        return res.json();
+      })
+      .then((data) => {
+        if (!cancelled) setVipActive(Boolean(data?.active));
+      })
+      .catch(() => {
+        if (!cancelled) setVipActive(false);
+      });
+    return () => { cancelled = true; };
+  }, [token, apiBaseUrl, isOpen]);
+
   if (!isOpen) return null;
 
   const cartTotal = items.reduce((sum, item) => {
@@ -43,7 +69,7 @@ export default function CartDrawer() {
     return sum + (item.product.price + extras) * item.quantity;
   }, 0);
 
-  const vipPromo = (
+  const vipPromo = !vipActive ? (
     <div className="m-4 rounded-2xl border border-amber-400/25 bg-gradient-to-br from-amber-500/10 via-red-950/10 to-transparent p-4">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10">
@@ -64,7 +90,7 @@ export default function CartDrawer() {
         Get DEMON VIP <ArrowRight className="h-4 w-4" />
       </button>
     </div>
-  );
+  ) : null;
 
   return (
     <>
