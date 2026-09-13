@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Trash2, Minus, Plus, ShoppingCart, ShoppingBag, Star, Settings2, Gift, Percent } from 'lucide-react';
+import { X, Trash2, Minus, Plus, ShoppingCart, ShoppingBag, Star, Settings2, Crown, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../lib/cart';
 import { useToast } from '../../lib/toast';
@@ -268,7 +268,27 @@ export default function CartDrawer() {
 
             {items.length > 0 && (
               <div className="border-t border-volcanic-800/50 p-5 space-y-4 bg-volcanic-900/80 backdrop-blur-lg">
-                <DiscountProgressBar total={cartTotal} currency={currency} />
+                <div className="rounded-2xl border border-amber-400/25 bg-gradient-to-br from-amber-500/10 via-red-950/10 to-transparent p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10">
+                      <Crown className="h-5 w-5 text-amber-300" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-black text-amber-200">DEMON VIP — 20% OFF ALL ORDERS</div>
+                      <p className="mt-1 text-xs leading-5 text-volcanic-400">Save 20% on every DemonArk Store order, plus more DEMON VIP perks.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      closeCart();
+                      navigate('/products?category=demon-vip');
+                    }}
+                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-black text-black transition hover:bg-amber-300"
+                  >
+                    Get DEMON VIP <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <span className="text-volcanic-400">{t('common.total')}</span>
                   <span className="text-xl font-bold text-heading">
@@ -291,92 +311,6 @@ export default function CartDrawer() {
         </div>
       </div>
     </>
-  );
-}
-
-const DISCOUNT_TIERS = [
-  { threshold: 50, discount: 10 },
-  { threshold: 100, discount: 20 },
-];
-
-function DiscountProgressBar({ total, currency }: { total: number; currency?: string }) {
-  const t = useT();
-  const currentTier = DISCOUNT_TIERS.filter((tier) => total >= tier.threshold).pop();
-  const nextTier = DISCOUNT_TIERS.find((tier) => total < tier.threshold);
-
-  const progressBase = currentTier ? currentTier.threshold : 0;
-  const progressTarget = nextTier ? nextTier.threshold : DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1].threshold;
-  const progressPercent = nextTier
-    ? Math.min(100, ((total - progressBase) / (progressTarget - progressBase)) * 100)
-    : 100;
-
-  const remaining = nextTier ? (nextTier.threshold - total) : 0;
-
-  return (
-    <div className="space-y-2.5">
-      <div className="flex items-center justify-between text-xs">
-        {currentTier ? (
-          <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-            <Percent className="w-3.5 h-3.5" />
-            -{currentTier.discount}% {t('cart.discount.applied')}
-          </span>
-        ) : (
-          <span className="flex items-center gap-1.5 text-volcanic-400">
-            <Gift className="w-3.5 h-3.5 text-red-500" />
-            {t('cart.discount.unlock')}
-          </span>
-        )}
-        {nextTier && (
-          <span className="text-volcanic-500">
-            {t('cart.discount.remaining_prefix')} <span className="text-red-400 font-medium">{formatMoney(remaining, currency)}</span> {t('cart.discount.remaining_suffix')} -{nextTier.discount}%
-          </span>
-        )}
-        {!nextTier && (
-          <span className="text-emerald-500 font-medium">{t('cart.discount.max_reached')}</span>
-        )}
-      </div>
-
-      <div className="relative h-2 bg-volcanic-800 rounded-full overflow-hidden">
-        <div
-          className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
-          style={{
-            width: `${progressPercent}%`,
-            background: currentTier
-              ? 'linear-gradient(90deg, #059669, #34d399)'
-              : 'linear-gradient(90deg, #0891b2, #22d3ee)',
-          }}
-        />
-        {DISCOUNT_TIERS.map((tier) => {
-          const pos = nextTier
-            ? ((tier.threshold - progressBase) / (progressTarget - progressBase)) * 100
-            : (tier.threshold / DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1].threshold) * 100;
-          if (pos <= 0 || pos > 100) return null;
-          return (
-            <div
-              key={tier.threshold}
-              className="absolute top-0 bottom-0 w-px bg-volcanic-600/60"
-              style={{ left: `${pos}%` }}
-            />
-          );
-        })}
-      </div>
-
-      <div className="flex justify-between">
-        {DISCOUNT_TIERS.map((tier) => (
-          <div
-            key={tier.threshold}
-            className={`flex items-center gap-1 text-[10px] font-medium transition-colors duration-300 ${
-              total >= tier.threshold ? 'text-emerald-400' : 'text-volcanic-500'
-            }`}
-          >
-            <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
-              total >= tier.threshold ? 'bg-emerald-400' : 'bg-volcanic-600'
-            }`} />
-            {formatMoney(tier.threshold, currency)} = -{tier.discount}%
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 
