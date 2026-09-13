@@ -25,6 +25,7 @@ const legacyEnglishReplacements: Array<[RegExp, string]> = [
   [/^Mes paiements$/i, 'My payments'],
   [/^Mes abonnements$/i, 'My subscriptions'],
   [/^Se déconnecter$/i, 'Log out'],
+  [/^, plus VIP access and member-only perks\.$/i, ', plus more DEMON VIP perks.'],
 ];
 
 function shouldNormalizeLegacyLabels() {
