@@ -9,10 +9,7 @@ const DEMON_VIP_DISCOUNT_PERCENT = 20;
 const DEMON_VIP_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const VIP_COUPON_TTL_SECONDS = 10 * 60;
 const OWNER_VIP_USER_IDS = new Set([228127]);
-// Temporary QA switch: force selected accounts to behave as non-VIP so the
-// normal customer checkout/upsell path can be tested end-to-end. Remove the
-// user ID from this set to restore the normal owner/test/live entitlement flow.
-const VIP_TEST_DISABLED_USER_IDS = new Set([228127]);
+const VIP_TEST_DISABLED_USER_IDS = new Set();
 
 function jsonError(res, status, message) { return res.status(status).json({ error: message }); }
 
