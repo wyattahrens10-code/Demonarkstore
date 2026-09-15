@@ -82,6 +82,9 @@ export async function syncAcknowledgedIdentity(profile) {
   const body = {
     eosid,
     tip4serv_user_id: tip4servUserId,
+    // EOSID is the durable game identity. This is only an admin-facing label
+    // until the game later reports the character's current name.
+    player_name: String(profile.tip4serv_username || `Tip4Serv ${tip4servUserId}`).slice(0, 191),
     email: profile.email || null,
   };
   if (profile.discord_id) {
