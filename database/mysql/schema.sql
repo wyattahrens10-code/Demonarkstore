@@ -21,14 +21,12 @@ CREATE TABLE IF NOT EXISTS player_identity_profiles (
   discord_global_name VARCHAR(191) NULL,
   eos_id VARCHAR(191) NULL,
   server_key VARCHAR(191) NULL,
+  eos_acknowledged_at DATETIME NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX player_identity_profiles_eos_idx (eos_id),
   INDEX player_identity_profiles_server_idx (server_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-ALTER TABLE player_identity_profiles
-  ADD COLUMN IF NOT EXISTS eos_acknowledged_at DATETIME NULL AFTER server_key;
 
 CREATE TABLE IF NOT EXISTS player_identity_sync_outbox (
   tip4serv_user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
