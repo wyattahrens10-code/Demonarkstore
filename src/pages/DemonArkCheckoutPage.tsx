@@ -78,6 +78,8 @@ export default function DemonArkCheckoutPage() {
   const [pendingPaymentUrl, setPendingPaymentUrl] = useState<string | null>(null);
   const [vipProductSlug, setVipProductSlug] = useState<string | null>(null);
   const [showVipReminder, setShowVipReminder] = useState(false);
+  const [showEosConfirmation, setShowEosConfirmation] = useState(false);
+  const [eosConfirmationChecked, setEosConfirmationChecked] = useState(false);
   const [discordState, setDiscordState] = useState<DiscordRequirementState>({ loading: true, linked: false, account: null });
 
   usePageTitle('Complete your order');
@@ -99,6 +101,8 @@ export default function DemonArkCheckoutPage() {
       (vipStatus.membership_type === 'owner' || (vipStatus.membership_type === 'recurring' && !vipStatus.subscription?.unsubscribed)),
   );
   const duplicateDemonVipSubscription = cartHasDemonVipSubscription && alreadySubscribed;
+  const eosIdentifierKey = requiredIdentifiers.find((id) => id === 'username' || id === 'eos_id');
+  const eosIdForConfirmation = eosIdentifierKey ? identifierValues[eosIdentifierKey]?.trim() || '' : '';
 
   useEffect(() => {
     if (!items.length || !store?.id) {
@@ -282,6 +286,16 @@ export default function DemonArkCheckoutPage() {
     }
   }, [requiredIdentifiers, identifierValues, apiBaseUrl, token, selectedServer, items, store, vipStatus, addToast, discordState.account?.id]);
 
+  const confirmEosIdAndContinue = () => {
+    setShowEosConfirmation(false);
+    setEosConfirmationChecked(false);
+    if (!vipStatus?.active && !cartHasDemonVip) {
+      setShowVipReminder(true);
+      return;
+    }
+    void performCheckout();
+  };
+
   const handleCheckout = () => {
     if (!token) {
       addToast('Connect your Tip4Serv account to continue checkout.', 'warning');
@@ -308,11 +322,12 @@ export default function DemonArkCheckoutPage() {
         return;
       }
     }
-    if (!vipStatus?.active && !cartHasDemonVip) {
-      setShowVipReminder(true);
+    if (!eosIdForConfirmation) {
+      addToast('A valid ARK EOSID is required before checkout.', 'warning');
       return;
     }
-    void performCheckout();
+    setEosConfirmationChecked(false);
+    setShowEosConfirmation(true);
   };
 
   const continueCoupon = async () => {
@@ -372,6 +387,49 @@ export default function DemonArkCheckoutPage() {
 
   return (
     <>
+      {showEosConfirmation && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="eos-confirmation-title">
+          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-red-500/25 bg-[#19191b] shadow-2xl">
+            <div className="bg-gradient-to-br from-red-600/15 via-red-950/20 to-[#19191b] p-7">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-red-400/25 bg-red-500/10"><CircleAlert className="h-7 w-7 text-red-300" /></div>
+              <div className="mt-4 text-center text-[11px] font-black uppercase tracking-[.2em] text-red-300">Before payment</div>
+              <h2 id="eos-confirmation-title" className="mt-2 text-center text-2xl font-black">Confirm your ARK EOSID</h2>
+              <div className="mt-5 break-all rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-center font-mono text-sm font-bold text-zinc-100">{eosIdForConfirmation}</div>
+              <p className="mt-5 text-sm leading-6 text-zinc-300">Purchases and rewards will be delivered to the DemonArk account connected to this EOSID.</p>
+              <p className="mt-3 text-sm leading-6 text-amber-200">Entering the wrong EOSID may cause your purchase to be credited to the wrong player.</p>
+            </div>
+            <div className="p-6 pt-2">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-[#222225] p-4 text-sm font-bold text-zinc-200">
+                <input
+                  type="checkbox"
+                  checked={eosConfirmationChecked}
+                  onChange={(event) => setEosConfirmationChecked(event.target.checked)}
+                  className="mt-0.5 h-5 w-5 accent-red-600"
+                />
+                <span>I have checked my EOSID and confirm it is correct.</span>
+              </label>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowEosConfirmation(false); setEosConfirmationChecked(false); }}
+                  className="rounded-xl border border-white/10 bg-[#222225] px-4 py-3.5 text-sm font-black text-zinc-300"
+                >
+                  Go back
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmEosIdAndContinue}
+                  disabled={!eosConfirmationChecked}
+                  className="rounded-xl bg-red-600 px-4 py-3.5 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showVipReminder && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-400/25 bg-[#19191b] shadow-2xl">
