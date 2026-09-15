@@ -27,6 +27,24 @@ CREATE TABLE IF NOT EXISTS player_identity_profiles (
   INDEX player_identity_profiles_server_idx (server_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE player_identity_profiles
+  ADD COLUMN IF NOT EXISTS eos_acknowledged_at DATETIME NULL AFTER server_key;
+
+CREATE TABLE IF NOT EXISTS player_identity_sync_outbox (
+  tip4serv_user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+  status ENUM('pending', 'synced', 'blocked') NOT NULL DEFAULT 'pending',
+  attempts INT UNSIGNED NOT NULL DEFAULT 0,
+  last_error_code VARCHAR(64) NULL,
+  next_attempt_at DATETIME NULL,
+  synced_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX player_identity_sync_outbox_status_idx (status, next_attempt_at),
+  CONSTRAINT player_identity_sync_outbox_profile_fk
+    FOREIGN KEY (tip4serv_user_id) REFERENCES player_identity_profiles(tip4serv_user_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS vip_checkout_coupons (
   id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
   tip4serv_user_id BIGINT UNSIGNED NOT NULL,
