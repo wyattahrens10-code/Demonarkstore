@@ -216,7 +216,7 @@ export default function DemonArkCheckoutPage() {
     navigate(vipProductSlug ? `/product/${vipProductSlug}` : '/products?category=demon-vip');
   };
 
-  const performCheckout = useCallback(async () => {
+  const performCheckout = useCallback(async (eosAcknowledged = false) => {
     setError(null);
     setLoadingCheckout(true);
     try {
@@ -225,7 +225,7 @@ export default function DemonArkCheckoutPage() {
       const identityResponse = await fetch(`${apiBaseUrl}/api/account/identity`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eos_id: eosId || null, server_key: selectedServer }),
+        body: JSON.stringify({ eos_id: eosId || null, server_key: selectedServer, eos_acknowledged: eosAcknowledged }),
       });
       const identityData = await identityResponse.json().catch(() => ({}));
       if (!identityResponse.ok) throw new Error(identityData?.error || 'Unable to save your DemonArk player identity.');
@@ -293,7 +293,7 @@ export default function DemonArkCheckoutPage() {
       setShowVipReminder(true);
       return;
     }
-    void performCheckout();
+    void performCheckout(true);
   };
 
   const handleCheckout = () => {
@@ -441,7 +441,7 @@ export default function DemonArkCheckoutPage() {
             </div>
             <div className="p-6 pt-0">
               <button onClick={goToVip} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-5 py-4 font-black text-black">Get DEMON VIP <ArrowRight className="h-4 w-4" /></button>
-              <button onClick={() => { setShowVipReminder(false); void performCheckout(); }} className="mt-3 w-full rounded-xl border border-white/10 bg-[#222225] px-5 py-3.5 text-sm font-bold text-zinc-300">No thanks, continue to payment</button>
+              <button onClick={() => { setShowVipReminder(false); void performCheckout(true); }} className="mt-3 w-full rounded-xl border border-white/10 bg-[#222225] px-5 py-3.5 text-sm font-bold text-zinc-300">No thanks, continue to payment</button>
               <p className="mt-3 text-center text-[11px] text-zinc-600">You can join DEMON VIP anytime.</p>
             </div>
           </div>
