@@ -64,6 +64,7 @@ test('sync requires checkout acknowledgement before forwarding an EOSID', async 
   assert.equal(sent.eosid, base.eos_id);
   assert.equal(sent.tip4serv_user_id, '228127');
   assert.equal(sent.discord_id, base.discord_id);
+  assert.equal(sent.player_name, 'Tip4Serv 228127');
 });
 
 test('acknowledged identity metadata is forwarded and canonical records map to Store fields', async () => {
