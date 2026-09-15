@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getPool, getSetting, setSetting } from './db.js';
 import playerIdentityRouter from './playerIdentityRoutes.js';
+import { startIdentitySyncWorker } from './identitySync.js';
 
 const app = express();
 const PORT = Number(process.env.PORT || 8787);
@@ -332,4 +333,5 @@ if (existsSync(rootIndex) && existsSync(rootAssets)) {
 
 app.listen(PORT, () => {
   console.log(`Shadow API listening on http://localhost:${PORT}`);
+  startIdentitySyncWorker();
 });
