@@ -48,6 +48,16 @@ async function initializeSchema() {
       for (const statement of statements) {
         await connection.query(statement);
       }
+      const [columns] = await connection.query(
+        `SELECT 1 FROM information_schema.columns
+         WHERE table_schema = DATABASE()
+           AND table_name = 'player_identity_profiles'
+           AND column_name = 'eos_acknowledged_at'
+         LIMIT 1`,
+      );
+      if (!columns.length) {
+        await connection.query('ALTER TABLE player_identity_profiles ADD COLUMN eos_acknowledged_at DATETIME NULL AFTER server_key');
+      }
     } finally {
       connection.release();
     }
