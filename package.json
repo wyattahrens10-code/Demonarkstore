@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start:api": "node server/index.js",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "test:identity": "node --test tests/playerIdentityService.test.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
