@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { getPool, getSetting } from './db.js';
 import { attemptIdentitySync } from './identitySync.js';
 import { canonicalProfile, loadCanonicalIdentity, playerIdentityFlags } from './playerIdentityService.js';
+import { canonicalVip } from './canonicalVip.js';
 
 const router = express.Router();
 const TIP4SERV_BASE = 'https://api.tip4serv.com/v1';
@@ -10,7 +11,6 @@ const DEMON_VIP_NAME = 'DEMON VIP';
 const DEMON_VIP_DISCOUNT_PERCENT = 20;
 const DEMON_VIP_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const VIP_COUPON_TTL_SECONDS = 10 * 60;
-const OWNER_VIP_USER_IDS = new Set([228127]);
 const VIP_TEST_DISABLED_USER_IDS = new Set();
 
 function jsonError(res, status, message) { return res.status(status).json({ error: message }); }
@@ -75,7 +75,16 @@ function findTestDemonVipPayment(payments, user) { const now = Date.now(); retur
 
 async function getVerifiedVip(token, user) {
   if (VIP_TEST_DISABLED_USER_IDS.has(Number(user?.id))) return null;
-  if (OWNER_VIP_USER_IDS.has(Number(user?.id))) return { source: 'owner_override', vip: { id: Number(user.id), status: 'active', onetime: false, unsubscribed: false }, expiresAt: 0, testMode: false, ownerOverride: true };
+  // Fetch on every status/coupon request. Never use a cached or hard-coded owner grant.
+  try {
+    const canonical = await loadCanonicalIdentity(user.id);
+    const entitlement = canonicalVip(canonical.player);
+    if (entitlement !== undefined) return entitlement;
+  } catch (error) {
+    // A customer who has not linked a player can still use subscription handling.
+    // Outages/auth failures must not revive a disabled owner/admin entitlement.
+    if (error.status !== 404 || error.code !== 'PLAYER_NOT_FOUND') throw error;
+  }
   const subscriptions = await loadUserSubscriptions(token); const liveVip = findDemonVip(subscriptions);
   if (liveVip) return { source: 'subscription', vip: liveVip, expiresAt: getMembershipExpiresAt(liveVip), testMode: false };
   const storePayments = await loadRecentStorePayments(); const testPayment = findTestDemonVipPayment(storePayments, user); if (!testPayment) return null;
@@ -85,7 +94,7 @@ async function getVerifiedVip(token, user) {
 router.get('/vip-status', requireTip4ServUser, async (req, res) => {
   try {
     const entitlement = await getVerifiedVip(req.tip4servToken, req.tip4servUser); const vip = entitlement?.vip || null; const expiresAt = entitlement?.expiresAt || 0;
-    res.json({ active: Boolean(entitlement), name: DEMON_VIP_NAME, discount_percent: entitlement ? DEMON_VIP_DISCOUNT_PERCENT : 0, mode: entitlement?.ownerOverride ? 'owner' : entitlement?.testMode ? 'test' : entitlement ? 'live' : null, membership_type: entitlement ? entitlement.ownerOverride ? 'owner' : entitlement.testMode ? 'test_one_time' : vip?.onetime ? 'one_time' : 'recurring' : null, active_until: expiresAt ? new Date(expiresAt).toISOString() : null, subscription: entitlement && !entitlement.testMode && !entitlement.ownerOverride ? { id: vip.id ?? null, status: vip.status ?? null, onetime: Boolean(vip.onetime), start_date: vip.start_date ?? null, next_payment: vip.next_payment ?? null, expire_date: vip.expire_date ?? null, unsubscribed: Boolean(vip.unsubscribed) } : null, test_payment: entitlement?.testMode ? { id: vip.id ?? null, status: vip.status ?? null, mode: vip.mode ?? null, date: vip.date ?? vip.created_at ?? null } : null, verified_at: new Date().toISOString() });
+    res.set('Cache-Control', 'no-store').json({ active: Boolean(entitlement), name: DEMON_VIP_NAME, discount_percent: entitlement ? DEMON_VIP_DISCOUNT_PERCENT : 0, mode: entitlement?.ownerOverride ? 'owner' : entitlement?.testMode ? 'test' : entitlement ? 'live' : null, membership_type: entitlement ? entitlement.ownerOverride ? 'owner' : entitlement.adminOverride ? 'admin' : entitlement.testMode ? 'test_one_time' : vip?.onetime ? 'one_time' : 'recurring' : null, active_until: expiresAt ? new Date(expiresAt).toISOString() : null, subscription: entitlement && !entitlement.testMode && !entitlement.ownerOverride && !entitlement.adminOverride ? { id: vip.id ?? null, status: vip.status ?? null, onetime: Boolean(vip.onetime), start_date: vip.start_date ?? null, next_payment: vip.next_payment ?? null, expire_date: vip.expire_date ?? null, unsubscribed: Boolean(vip.unsubscribed) } : null, test_payment: entitlement?.testMode ? { id: vip.id ?? null, status: vip.status ?? null, mode: vip.mode ?? null, date: vip.date ?? vip.created_at ?? null } : null, verified_at: new Date().toISOString() });
   } catch (err) { jsonError(res, 502, err instanceof Error ? err.message : 'Unable to verify Demon VIP membership.'); }
 });
 
